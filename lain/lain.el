@@ -66,7 +66,14 @@
         var el;
         $(\".org-agenda-calendar-event,.org-scheduled-today,.org-scheduled,.org-agenda-done,.org-scheduled-previously,.org-warning\").click(function(el){
            var text = $(el.target).text().replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'');
-           $.get(\"/lain/?text=\" + text).done(function(){
+           $.ajax({
+               type: \"GET\", 
+               url: \"/lain/?text=\" + text, 
+               headers: {
+                 \"Host\": \"example.com\",
+                 \"apikey\": \"mykey\"
+               }
+             }).done(function(){
                window.location = \"ORG-TASK.html\";
            });
         });
