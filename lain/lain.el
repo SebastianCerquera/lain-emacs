@@ -57,6 +57,7 @@
    my-app-routes 
    '(("^.+//lain/\\(.*\\)" . task-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
+     ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
  
 (setq org-agenda-export-html-style "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
@@ -70,7 +71,6 @@
                type: \"GET\", 
                url: \"/lain/?text=\" + text, 
                headers: {
-                 \"Host\": \"example.com\",
                  \"apikey\": \"mykey\"
                }
              }).done(function(){
@@ -79,7 +79,36 @@
         });
     });
 </script>")
+
+(setq lain-cookie-html "<html>
+<head>
+<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
+<script src=\"http://code.jquery.com/jquery-latest.min.js\" type=\"text/javascript\"></script>
+<script type=\"text/javascript\">
+    $(document).ready(function(){
+         $(\"input:text\").change(function(a){
+             document.cookie = \"Authorization=\" + $(a.target).val() +  \"; expires=Fri, 3 Aug 2019 20:47:11 UTC; path=/;\"
+         });
  
+         $(\"input:submit\").click(function(a){
+             window.location = \"/calendar/\";
+         });
+    });
+</script>
+</head>
+<body>
+  Insert the cookie:<br>
+  <input type=\"text\" name=\"firstname\" value=\"Mickey\">
+  <br>
+  <br><br>
+  <input type=\"submit\" value=\"Submit\">
+</body>
+</html>")
+
+
+(defun cookie-handler (httpcon)
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (elnode-http-return httpcon lain-cookie-html))
 
 (defun calendar-view (httpcon)
   (let ((org-agenda-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
