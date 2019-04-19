@@ -1,5 +1,8 @@
 FROM ubuntu:18.04
 
+RUN apt-get update && apt-get install -y language-pack-es
+RUN echo "LANG=es_CO.UTF-8" > /etc/default/locale
+
 RUN apt-get update && apt-get install -y emacs25 curl
 
 RUN mkdir /tmp/org/

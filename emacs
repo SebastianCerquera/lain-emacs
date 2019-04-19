@@ -1,4 +1,7 @@
 (ido-mode t)
+
+(global-set-key (kbd "C-x C-m") 'execute-extended-command)
+
 (require 'iso-transl)
 (setq-default indent-tabs-mode nil)
 
