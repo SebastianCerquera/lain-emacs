@@ -66,7 +66,8 @@
     $(document).ready(function(){
         var el;
         $(\".org-agenda-calendar-event,.org-scheduled-today,.org-scheduled,.org-agenda-done,.org-scheduled-previously,.org-warning\").click(function(el){
-           var text = $(el.target).text().replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'');
+           var text = $(el.target).text().replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
+           text = encodeURIComponent(text);
            $.ajax({
                type: \"GET\", 
                url: \"/lain/?text=\" + text, 
