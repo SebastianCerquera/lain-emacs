@@ -57,6 +57,7 @@
    my-app-routes 
    '(("^.+//lain/\\(.*\\)" . task-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
+     ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
  
@@ -121,6 +122,15 @@
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/VIEW.html" ">Agenda View</a></html>")))
 
+(defun todo-view (httpcon)
+  (let ((org-agenda-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+        (org-agenda-buffer-tmp-name "TODO.html"))
+    (org-todo-list))
+  (save-excursion
+    (set-buffer (get-buffer-create "TODO.html"))
+    (org-agenda-write "/tmp/org/TODO.html"))
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
 
 (defun task-handler (httpcon)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
