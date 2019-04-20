@@ -65,7 +65,21 @@
 <script src=\"http://code.jquery.com/jquery-latest.min.js\" type=\"text/javascript\"></script>
 <script type=\"text/javascript\">
     $(document).ready(function(){
-        var el;
+        $(\"span.org-todo\").click(function(el){
+           var text = $(el.target)[0].nextSibling.textContent;
+           text = text.replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?').replace(/\\+/g,'\\\\+').replace(\"\\n\", \"\").replace(/(.+)\\s+PROJECT:\\s+/, \"$1\").trim();
+           text = encodeURIComponent(text);
+           $.ajax({
+               type: \"GET\", 
+               url: \"/lain/?text=\" + text, 
+               headers: {
+                 \"apikey\": \"mykey\"
+               }
+             }).done(function(){
+               window.location = \"ORG-TASK.html\";
+           });
+        });
+
         $(\".org-agenda-calendar-event,.org-scheduled-today,.org-scheduled,.org-agenda-done,.org-scheduled-previously,.org-warning\").click(function(el){
            var text = $(el.target).text().replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
            text = encodeURIComponent(text);
@@ -79,6 +93,7 @@
                window.location = \"ORG-TASK.html\";
            });
         });
+
     });
 </script>")
 
@@ -124,11 +139,11 @@
 
 (defun todo-view (httpcon)
   (let ((org-agenda-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
-        (org-agenda-buffer-tmp-name "TODO.html"))
+        (org-agenda-buffer-name "TASKS.html"))
     (org-todo-list))
   (save-excursion
-    (set-buffer (get-buffer-create "TODO.html"))
-    (org-agenda-write "/tmp/org/TODO.html"))
+    (set-buffer (get-buffer-create "TASKS.html"))
+    (org-agenda-write "/tmp/org/TODO.html" nil nil"TASKS.html"))
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
 
