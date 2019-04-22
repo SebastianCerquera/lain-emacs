@@ -18,6 +18,11 @@
   (widen)
   (delete-file "/tmp/org/ORG-TASK.html"))
 
+(defun lain-kill-org-buffers()
+  (dolist (x (buffer-list))
+    (if (string-match ".*PROJECT.org" (buffer-name x) 0)
+        (kill-buffer x))))
+
 (defun org-agenda-write-tmp (file &optional open nosettings agenda-bufname)
   (org-let (if nosettings nil org-agenda-exporter-settings)
     '(save-excursion
@@ -128,7 +133,11 @@
   (elnode-http-return httpcon lain-cookie-html))
 
 (defun calendar-view (httpcon)
-  (let ((org-agenda-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+  (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+  (lain-kill-org-buffers)
+  (dolist (file lain-org-files)
+      (find-file file))
+  (let ((org-agenda-files lain-org-files)
         (org-agenda-buffer-tmp-name "TASKS.html"))
     (org-agenda-list))
   (save-excursion
@@ -138,7 +147,11 @@
   (elnode-http-return httpcon (concat "<html><a href=" "/VIEW.html" ">Agenda View</a></html>")))
 
 (defun todo-view (httpcon)
-  (let ((org-agenda-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+  (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+  (lain-kill-org-buffers)
+  (dolist (file lain-org-files)
+      (find-file file))
+  (let ((org-agenda-files lain-org-files)
         (org-agenda-buffer-name "TASKS.html"))
     (org-todo-list))
   (save-excursion
