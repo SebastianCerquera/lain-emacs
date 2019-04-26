@@ -18,9 +18,22 @@
   (widen)
   (delete-file "/tmp/org/ORG-TASK.html"))
 
+(defun lain-check-task (text)
+  (switch-to-buffer (get-buffer-create "TASKS.html"))
+  (message (buffer-name (current-buffer)))
+  (beginning-of-buffer)
+  (re-search-forward text)
+  (org-agenda-switch-to)
+  (org-todo 'right)
+  (save-buffer)
+  (right-char))
+
+
 (defun lain-kill-org-buffers()
   (dolist (x (buffer-list))
     (if (string-match ".*PROJECT.org" (buffer-name x) 0)
+        (kill-buffer x))
+    (if (string-match ".*PERIODIC.org" (buffer-name x) 0)
         (kill-buffer x))))
 
 (defun org-agenda-write-tmp (file &optional open nosettings agenda-bufname)
@@ -61,6 +74,7 @@
 (defvar 
    my-app-routes 
    '(("^.+//lain/\\(.*\\)" . task-handler)
+     ("^.+//check/\\(.*\\)" . periodic-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
@@ -99,6 +113,28 @@
            });
         });
 
+        var e = window.location.href.split(\"/\");
+        if(e[e.length - 1] == \"ORG-TASK.html\"){
+             var x = $(\"body\").html();
+             $(\"body\").html(\"<button>Check task</button>\" + x );
+        }
+         
+        $(\"button\").click(function(){
+            var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
+            var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
+            text = encodeURIComponent(text);
+         
+            $.ajax({
+                type: \"GET\", 
+                url: \"/check/?text=\" + text, 
+                headers: {
+                  \"apikey\": \"mykey\"
+                }
+            }).done(function(){
+               alert(\"state updated\");
+            });
+        });
+
     });
 </script>")
 
@@ -132,8 +168,23 @@
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon lain-cookie-html))
 
+;; i might needed when working on the android client
+(defun periodic-view (httpcon)
+  (setq lain-org-files '("/small/SMALL/PERIODIC.org"))
+  (lain-kill-org-buffers)
+  (dolist (file lain-org-files)
+      (find-file file))
+  (let ((org-agenda-files lain-org-files)
+        (org-agenda-buffer-tmp-name "TASKS.html"))
+    (org-agenda-list))
+  (save-excursion
+    (set-buffer (get-buffer-create "TASKS.html"))
+    (org-agenda-write "/tmp/org/PERIODIC.html"))
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (elnode-http-return httpcon (concat "<html><a href=" "/PERIODIC.html" ">Periodic View</a></html>")))
+
 (defun calendar-view (httpcon)
-  (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+  (setq lain-org-files '("/small/SMALL/PERIODIC.org" "/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
       (find-file file))
@@ -159,6 +210,12 @@
     (org-agenda-write "/tmp/org/TODO.html" nil nil"TASKS.html"))
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
+
+
+(defun periodic-handler (httpcon)
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (lain-check-task (elnode-http-param httpcon "text"))
+  (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun task-handler (httpcon)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
