@@ -18,12 +18,29 @@
   (widen)
   (delete-file "/tmp/org/ORG-TASK.html"))
 
-(defun lain-check-task (text)
+(defun lain-done-task (text)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
   (re-search-forward text)
   (org-agenda-switch-to)
+  (org-todo 'right)
+  ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
+  (org-add-log-note)
+  (save-buffer)
+  (org-narrow-to-subtree)
+  (switch-to-buffer (current-buffer))
+  (message (buffer-name (current-buffer)))
+  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
+
+(defun lain-canceled-task (text)
+  (switch-to-buffer (get-buffer-create "TASKS.html"))
+  (message (buffer-name (current-buffer)))
+  (beginning-of-buffer)
+  (re-search-forward text)
+  (org-agenda-switch-to)
+  (org-todo 'left)
+  (org-todo 'left)
   (org-todo 'right)
   ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
   (org-add-log-note)
@@ -79,7 +96,8 @@
 (defvar 
    my-app-routes 
    '(("^.+//lain/\\(.*\\)" . task-handler)
-     ("^.+//check/\\(.*\\)" . periodic-handler)
+     ("^.+//done/\\(.*\\)" . periodic-done-handler)
+     ("^.+//canceled/\\(.*\\)" . periodic-canceled-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
@@ -121,22 +139,40 @@
         var e = window.location.href.split(\"/\");
         if(e[e.length - 1] == \"ORG-TASK.html\"){
              var x = $(\"body\").html();
-             $(\"body\").html(\"<button>Check task</button>\" + x );
+             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"canceled\\\">Cancel task</button>\" + x );
         }
          
-        $(\"button\").click(function(){
+        $(\"button.done\").click(function(){
             var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
             var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
             text = encodeURIComponent(text);
          
             $.ajax({
                 type: \"GET\", 
-                url: \"/check/?text=\" + text, 
+                url: \"/done/?text=\" + text, 
                 headers: {
                   \"apikey\": \"mykey\"
                 }
             }).done(function(){
                alert(\"state updated\");
+               window.location = \"ORG-TASK.html\";
+            });
+        });
+
+        $(\"button.canceled\").click(function(){
+            var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
+            var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
+            text = encodeURIComponent(text);
+         
+            $.ajax({
+                type: \"GET\", 
+                url: \"/canceled/?text=\" + text, 
+                headers: {
+                  \"apikey\": \"mykey\"
+                }
+            }).done(function(){
+               alert(\"state updated\");
+               window.location = \"ORG-TASK.html\";
             });
         });
 
@@ -217,9 +253,14 @@
   (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
 
 
-(defun periodic-handler (httpcon)
+(defun periodic-done-handler (httpcon)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-check-task (elnode-http-param httpcon "text"))
+  (lain-done-task (elnode-http-param httpcon "text"))
+  (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
+
+(defun periodic-canceled-handler (httpcon)
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (lain-canceled-task (elnode-http-param httpcon "text"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun task-handler (httpcon)
