@@ -25,8 +25,13 @@
   (re-search-forward text)
   (org-agenda-switch-to)
   (org-todo 'right)
+  ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
+  (org-add-log-note)
   (save-buffer)
-  (right-char))
+  (org-narrow-to-subtree)
+  (switch-to-buffer (current-buffer))
+  (message (buffer-name (current-buffer)))
+  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 
 (defun lain-kill-org-buffers()
