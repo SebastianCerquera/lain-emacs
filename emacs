@@ -46,5 +46,3 @@
   (interactive)
   (set-background-color "black")
   (set-foreground-color "orange"))
-
-(high-bright-look-and-feel)

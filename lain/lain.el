@@ -102,8 +102,9 @@
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
- 
-(setq org-agenda-export-html-style "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
+
+
+(setq htmlize-head-tags "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
 <script src=\"http://code.jquery.com/jquery-latest.min.js\" type=\"text/javascript\"></script>
 <script type=\"text/javascript\">
     $(document).ready(function(){
@@ -211,6 +212,7 @@
 
 ;; i might needed when working on the android client
 (defun periodic-view (httpcon)
+  (high-bright-look-and-feel)
   (setq lain-org-files '("/small/SMALL/PERIODIC.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
@@ -225,6 +227,7 @@
   (elnode-http-return httpcon (concat "<html><a href=" "/PERIODIC.html" ">Periodic View</a></html>")))
 
 (defun calendar-view (httpcon)
+  (high-bright-look-and-feel)
   (setq lain-org-files '("/small/SMALL/PERIODIC.org" "/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
@@ -239,6 +242,7 @@
   (elnode-http-return httpcon (concat "<html><a href=" "/VIEW.html" ">Agenda View</a></html>")))
 
 (defun todo-view (httpcon)
+  (high-bright-look-and-feel)
   (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
@@ -254,16 +258,19 @@
 
 
 (defun periodic-done-handler (httpcon)
+  (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (lain-done-task (elnode-http-param httpcon "text"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun periodic-canceled-handler (httpcon)
+  (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (lain-canceled-task (elnode-http-param httpcon "text"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun task-handler (httpcon)
+  (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (lain-create-agenda-view (elnode-http-param httpcon "text"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
