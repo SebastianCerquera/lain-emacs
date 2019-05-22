@@ -2,6 +2,7 @@ FROM ubuntu:18.04
 
 RUN apt-get update && apt-get install -y language-pack-es
 RUN echo "LANG=es_CO.UTF-8" > /etc/default/locale
+RUN ln -sf /usr/share/zoneinfo/America/Bogota /etc/localtime
 
 RUN apt-get update && apt-get install -y emacs25 curl
 

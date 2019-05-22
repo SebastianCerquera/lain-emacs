@@ -41,3 +41,8 @@
 
 (add-to-list 'load-path "~/.emacs.d/lain/")
 (require 'lain)
+
+(defun high-bright-look-and-feel ()
+  (interactive)
+  (set-background-color "black")
+  (set-foreground-color "orange"))

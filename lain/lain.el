@@ -18,15 +18,37 @@
   (widen)
   (delete-file "/tmp/org/ORG-TASK.html"))
 
-(defun lain-check-task (text)
+(defun lain-done-task (text)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
   (re-search-forward text)
   (org-agenda-switch-to)
   (org-todo 'right)
+  ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
+  (org-add-log-note)
   (save-buffer)
-  (right-char))
+  (org-narrow-to-subtree)
+  (switch-to-buffer (current-buffer))
+  (message (buffer-name (current-buffer)))
+  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
+
+(defun lain-canceled-task (text)
+  (switch-to-buffer (get-buffer-create "TASKS.html"))
+  (message (buffer-name (current-buffer)))
+  (beginning-of-buffer)
+  (re-search-forward text)
+  (org-agenda-switch-to)
+  (org-todo 'left)
+  (org-todo 'left)
+  (org-todo 'right)
+  ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
+  (org-add-log-note)
+  (save-buffer)
+  (org-narrow-to-subtree)
+  (switch-to-buffer (current-buffer))
+  (message (buffer-name (current-buffer)))
+  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 
 (defun lain-kill-org-buffers()
@@ -74,13 +96,15 @@
 (defvar 
    my-app-routes 
    '(("^.+//lain/\\(.*\\)" . task-handler)
-     ("^.+//check/\\(.*\\)" . periodic-handler)
+     ("^.+//done/\\(.*\\)" . periodic-done-handler)
+     ("^.+//canceled/\\(.*\\)" . periodic-canceled-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
- 
-(setq org-agenda-export-html-style "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
+
+
+(setq htmlize-head-tags "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
 <script src=\"http://code.jquery.com/jquery-latest.min.js\" type=\"text/javascript\"></script>
 <script type=\"text/javascript\">
     $(document).ready(function(){
@@ -116,22 +140,40 @@
         var e = window.location.href.split(\"/\");
         if(e[e.length - 1] == \"ORG-TASK.html\"){
              var x = $(\"body\").html();
-             $(\"body\").html(\"<button>Check task</button>\" + x );
+             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"canceled\\\">Cancel task</button>\" + x );
         }
          
-        $(\"button\").click(function(){
+        $(\"button.done\").click(function(){
             var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
             var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
             text = encodeURIComponent(text);
          
             $.ajax({
                 type: \"GET\", 
-                url: \"/check/?text=\" + text, 
+                url: \"/done/?text=\" + text, 
                 headers: {
                   \"apikey\": \"mykey\"
                 }
             }).done(function(){
                alert(\"state updated\");
+               window.location = \"ORG-TASK.html\";
+            });
+        });
+
+        $(\"button.canceled\").click(function(){
+            var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
+            var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
+            text = encodeURIComponent(text);
+         
+            $.ajax({
+                type: \"GET\", 
+                url: \"/canceled/?text=\" + text, 
+                headers: {
+                  \"apikey\": \"mykey\"
+                }
+            }).done(function(){
+               alert(\"state updated\");
+               window.location = \"ORG-TASK.html\";
             });
         });
 
@@ -170,6 +212,7 @@
 
 ;; i might needed when working on the android client
 (defun periodic-view (httpcon)
+  (high-bright-look-and-feel)
   (setq lain-org-files '("/small/SMALL/PERIODIC.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
@@ -184,6 +227,7 @@
   (elnode-http-return httpcon (concat "<html><a href=" "/PERIODIC.html" ">Periodic View</a></html>")))
 
 (defun calendar-view (httpcon)
+  (high-bright-look-and-feel)
   (setq lain-org-files '("/small/SMALL/PERIODIC.org" "/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
@@ -198,6 +242,7 @@
   (elnode-http-return httpcon (concat "<html><a href=" "/VIEW.html" ">Agenda View</a></html>")))
 
 (defun todo-view (httpcon)
+  (high-bright-look-and-feel)
   (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
@@ -212,12 +257,20 @@
   (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
 
 
-(defun periodic-handler (httpcon)
+(defun periodic-done-handler (httpcon)
+  (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-check-task (elnode-http-param httpcon "text"))
+  (lain-done-task (elnode-http-param httpcon "text"))
+  (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
+
+(defun periodic-canceled-handler (httpcon)
+  (high-bright-look-and-feel)
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (lain-canceled-task (elnode-http-param httpcon "text"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun task-handler (httpcon)
+  (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (lain-create-agenda-view (elnode-http-param httpcon "text"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
