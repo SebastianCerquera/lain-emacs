@@ -1,7 +1,9 @@
-(defun org-log-note-update (state date hour)
+(defun org-log-note-update (state date hour newstate)
   (re-search-forward (org-item-beginning-re) nil t)
   (let ((regex (concat "\\(.+\\)" state "\\(.+\\)\\[[0-9]+-[0-9]+-[0-9]+ \\(.+\\) [0-9]+:[0-9]+\\]")))
     (re-search-forward regex nil t)
+    (if newstate
+        (setq state newstate))
     (replace-match (concat (match-string 1) state (match-string 2) "[" date " " (match-string 3) " " hour "]"))))
 
 (defun lain-create-agenda-view (text)
@@ -36,7 +38,24 @@
   (save-buffer)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
-  (org-log-note-update "DONE" date time)
+  (org-log-note-update "DONE" date time nil)
+  (message (buffer-name (current-buffer)))
+  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
+
+
+(defun lain-itried-task (text date time)
+  (switch-to-buffer (get-buffer-create "TASKS.html"))
+  (message (buffer-name (current-buffer)))
+  (beginning-of-buffer)
+  (re-search-forward text)
+  (org-agenda-switch-to)
+  (org-todo 'right)
+  ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
+  (org-add-log-note)
+  (save-buffer)
+  (org-narrow-to-subtree)
+  (switch-to-buffer (current-buffer))
+  (org-log-note-update "DONE" date time "ITRIED")
   (message (buffer-name (current-buffer)))
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
@@ -54,7 +73,7 @@
   (save-buffer)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
-  (org-log-note-update "CANCELED" date time)
+  (org-log-note-update "CANCELED" date time nil)
   (message (buffer-name (current-buffer)))
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
@@ -107,6 +126,7 @@
    '(("^.+//lain/\\(.*\\)" . task-handler)
      ("^.+//done/\\(.*\\)" . periodic-done-handler)
      ("^.+//canceled/\\(.*\\)" . periodic-canceled-handler)
+     ("^.+//itried/\\(.*\\)" . periodic-itried-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
@@ -168,7 +188,7 @@
         var e = window.location.href.split(\"/\");
         if(e[e.length - 1] == \"ORG-TASK.html\"){
              var x = $(\"body\").html();
-             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"canceled\\\">Cancel task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/>\" + x );
+             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"itried\\\">I tried</button><button class=\\\"canceled\\\">Cancel task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/>\" + x );
              setTaskTimeStamp();
         }
          
@@ -186,6 +206,30 @@
             $.ajax({
                 type: \"GET\", 
                 url: \"/done/?\" + url, 
+                headers: {
+                  \"apikey\": \"mykey\"
+                }
+            }).done(function(){
+               alert(\"state updated\");
+               window.location = \"ORG-TASK.html\";
+            });
+        });
+
+
+        $(\"button.itried\").click(function(){
+            var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
+            var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
+            text = encodeURIComponent(text);
+         
+            var timestamp = getTaskTimeStamp();
+
+            var url = \"text=\" + text; 
+            url = url + \"&date=\" + timestamp.date; 
+            url = url + \"&time=\" + timestamp.time; 
+
+            $.ajax({
+                type: \"GET\", 
+                url: \"/itried/?\" + url, 
                 headers: {
                   \"apikey\": \"mykey\"
                 }
@@ -297,6 +341,12 @@
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
 
+
+(defun periodic-itried-handler (httpcon)
+  (high-bright-look-and-feel)
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (lain-itried-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time"))
+  (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun periodic-done-handler (httpcon)
   (high-bright-look-and-feel)
