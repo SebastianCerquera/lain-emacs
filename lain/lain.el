@@ -1,3 +1,9 @@
+(defun org-log-note-update (state date hour)
+  (re-search-forward (org-item-beginning-re) nil t)
+  (let ((regex (concat "\\(.+\\)" state "\\(.+\\)\\[[0-9]+-[0-9]+-[0-9]+ \\(.+\\) [0-9]+:[0-9]+\\]")))
+    (re-search-forward regex nil t)
+    (replace-match (concat (match-string 1) state (match-string 2) "[" date " " (match-string 3) " " hour "]"))))
+
 (defun lain-create-agenda-view (text)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
@@ -18,7 +24,7 @@
   (widen)
   (delete-file "/tmp/org/ORG-TASK.html"))
 
-(defun lain-done-task (text)
+(defun lain-done-task (text date time)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
@@ -30,10 +36,11 @@
   (save-buffer)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
+  (org-log-note-update "DONE" date time)
   (message (buffer-name (current-buffer)))
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
-(defun lain-canceled-task (text)
+(defun lain-canceled-task (text date time)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
@@ -47,8 +54,10 @@
   (save-buffer)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
+  (org-log-note-update "CANCELED" date time)
   (message (buffer-name (current-buffer)))
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
+
 
 
 (defun lain-kill-org-buffers()
@@ -137,10 +146,30 @@
            });
         });
 
+        var setTaskTimeStamp = function(){
+            var x = new Date()
+            var y = [x.getHours(), x.getMinutes()]
+            var z = y.join(\":\")
+            $(\"input.time\").val(z)
+             
+            var x = new Date()
+            var y = [x.getUTCFullYear(), x.getUTCMonth() < 10 ? \"0\" + (x.getUTCMonth() + 1) : (x.getUTCMonth() + 1), x.getUTCDate()]
+            var z = y.join(\"-\")
+            $(\"input.date\").val(z)
+        }
+
+        var getTaskTimeStamp = function(){
+            return {
+               \"date\":  $(\"input.date\").val(),
+               \"time\":  $(\"input.time\").val()
+            }
+        }
+
         var e = window.location.href.split(\"/\");
         if(e[e.length - 1] == \"ORG-TASK.html\"){
              var x = $(\"body\").html();
-             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"canceled\\\">Cancel task</button>\" + x );
+             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"canceled\\\">Cancel task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/>\" + x );
+             setTaskTimeStamp();
         }
          
         $(\"button.done\").click(function(){
@@ -148,9 +177,15 @@
             var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
             text = encodeURIComponent(text);
          
+            var timestamp = getTaskTimeStamp();
+
+            var url = \"text=\" + text; 
+            url = url + \"&date=\" + timestamp.date; 
+            url = url + \"&time=\" + timestamp.time; 
+
             $.ajax({
                 type: \"GET\", 
-                url: \"/done/?text=\" + text, 
+                url: \"/done/?\" + url, 
                 headers: {
                   \"apikey\": \"mykey\"
                 }
@@ -165,9 +200,15 @@
             var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
             text = encodeURIComponent(text);
          
+            var timestamp = getTaskTimeStamp();
+
+            var url = \"text=\" + text; 
+            url = url + \"&date=\" + timestamp.date; 
+            url = url + \"&time=\" + timestamp.time; 
+
             $.ajax({
                 type: \"GET\", 
-                url: \"/canceled/?text=\" + text, 
+                url: \"/canceled/?\" + url, 
                 headers: {
                   \"apikey\": \"mykey\"
                 }
@@ -260,13 +301,13 @@
 (defun periodic-done-handler (httpcon)
   (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-done-task (elnode-http-param httpcon "text"))
+  (lain-done-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun periodic-canceled-handler (httpcon)
   (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-canceled-task (elnode-http-param httpcon "text"))
+  (lain-canceled-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun task-handler (httpcon)
