@@ -26,7 +26,7 @@
   (widen)
   (delete-file "/tmp/org/ORG-TASK.html"))
 
-(defun lain-done-task (text date time)
+(defun lain-done-task (text date time link)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
@@ -37,13 +37,12 @@
   (org-add-log-note)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
-  (org-log-note-update "DONE" date time nil)
+  (org-log-note-update "DONE" date time (if (not link) "DONE" (concat "[[" link "]" "[DONE]]")))
   (message (buffer-name (current-buffer)))
   (save-buffer)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
-
-(defun lain-itried-task (text date time)
+(defun lain-itried-task (text date time link)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
@@ -54,12 +53,12 @@
   (org-add-log-note)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
-  (org-log-note-update "DONE" date time "ITRIED")
+  (org-log-note-update "DONE" date time (if (not link) "ITRIED" (concat "[[" link "]" "[ITRIED]]")))
   (message (buffer-name (current-buffer)))
   (save-buffer)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
-(defun lain-canceled-task (text date time)
+(defun lain-canceled-task (text date time link)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
@@ -72,11 +71,10 @@
   (org-add-log-note)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
-  (org-log-note-update "CANCELED" date time nil)
+  (org-log-note-update "CANCELED" date time (if (not link) "CANCELED" (concat "[[" link "]" "[CANCELED]]")))
   (message (buffer-name (current-buffer)))
   (save-buffer)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
-
 
 
 (defun lain-kill-org-buffers()
@@ -188,7 +186,7 @@
         var e = window.location.href.split(\"/\");
         if(e[e.length - 1] == \"ORG-TASK.html\"){
              var x = $(\"body\").html();
-             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"itried\\\">I tried</button><button class=\\\"canceled\\\">Cancel task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/>\" + x );
+             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"itried\\\">I tried</button><button class=\\\"canceled\\\">Cancel task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/><br><input type=\\\"text\\\" class=\\\"link\\\"/>\" + x );
              setTaskTimeStamp();
         }
          
@@ -202,6 +200,7 @@
             var url = \"text=\" + text; 
             url = url + \"&date=\" + timestamp.date; 
             url = url + \"&time=\" + timestamp.time; 
+            url = url + \"&link=\" + $(\"input.link\").val(); 
 
             $.ajax({
                 type: \"GET\", 
@@ -225,7 +224,8 @@
 
             var url = \"text=\" + text; 
             url = url + \"&date=\" + timestamp.date; 
-            url = url + \"&time=\" + timestamp.time; 
+            url = url + \"&time=\" + timestamp.time;
+            url = url + \"&link=\" + $(\"input.link\").val(); 
 
             $.ajax({
                 type: \"GET\", 
@@ -249,6 +249,7 @@
             var url = \"text=\" + text; 
             url = url + \"&date=\" + timestamp.date; 
             url = url + \"&time=\" + timestamp.time; 
+            url = url + \"&link=\" + $(\"input.link\").val();
 
             $.ajax({
                 type: \"GET\", 
@@ -345,19 +346,19 @@
 (defun periodic-itried-handler (httpcon)
   (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-itried-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time"))
+  (lain-itried-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time") (elnode-http-param httpcon "link"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun periodic-done-handler (httpcon)
   (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-done-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time"))
+  (lain-done-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time") (elnode-http-param httpcon "link"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun periodic-canceled-handler (httpcon)
   (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-canceled-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time"))
+  (lain-canceled-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date") (elnode-http-param httpcon "time") (elnode-http-param httpcon "link"))
   (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun task-handler (httpcon)
