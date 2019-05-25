@@ -35,11 +35,11 @@
   (org-todo 'right)
   ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
   (org-add-log-note)
-  (save-buffer)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
   (org-log-note-update "DONE" date time nil)
   (message (buffer-name (current-buffer)))
+  (save-buffer)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 
@@ -52,11 +52,11 @@
   (org-todo 'right)
   ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
   (org-add-log-note)
-  (save-buffer)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
   (org-log-note-update "DONE" date time "ITRIED")
   (message (buffer-name (current-buffer)))
+  (save-buffer)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 (defun lain-canceled-task (text date time)
@@ -70,11 +70,11 @@
   (org-todo 'right)
   ;; this is suppsed to be executed as a hook but it is not running when the command is invoked non interactively.
   (org-add-log-note)
-  (save-buffer)
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
   (org-log-note-update "CANCELED" date time nil)
   (message (buffer-name (current-buffer)))
+  (save-buffer)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 
