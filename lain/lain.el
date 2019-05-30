@@ -26,6 +26,21 @@
   (widen)
   (delete-file "/tmp/org/ORG-TASK.html"))
 
+
+(defun lain-reschedule-task (text date)
+  (switch-to-buffer (get-buffer-create "TASKS.html"))
+  (message (buffer-name (current-buffer)))
+  (beginning-of-buffer)
+  (re-search-forward text)
+  (org-agenda-switch-to)
+  (org-schedule '(4))
+  (org-schedule '() date)
+  (org-narrow-to-subtree)
+  (switch-to-buffer (current-buffer))
+  (message (buffer-name (current-buffer)))
+  (save-buffer)
+  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
+
 (defun lain-done-task (text date time link)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
@@ -125,6 +140,7 @@
      ("^.+//done/\\(.*\\)" . periodic-done-handler)
      ("^.+//canceled/\\(.*\\)" . periodic-canceled-handler)
      ("^.+//itried/\\(.*\\)" . periodic-itried-handler)
+     ("^.+//reschedule/\\(.*\\)" . task-reschedule-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
@@ -186,7 +202,7 @@
         var e = window.location.href.split(\"/\");
         if(e[e.length - 1] == \"ORG-TASK.html\"){
              var x = $(\"body\").html();
-             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"itried\\\">I tried</button><button class=\\\"canceled\\\">Cancel task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/><br><input type=\\\"text\\\" class=\\\"link\\\"/>\" + x );
+             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"itried\\\">I tried</button><button class=\\\"canceled\\\">Cancel task</button><button class=\\\"reschedule\\\">Reschedule task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/><br><input type=\\\"text\\\" class=\\\"link\\\"/>\" + x );
              setTaskTimeStamp();
         }
          
@@ -214,6 +230,27 @@
             });
         });
 
+        $(\"button.reschedule\").click(function(){
+            var matches = $(\"pre\").text().match(/^\\*+\\s+(PERIODIC|TODO|IN_PROGRESS|CHECK|LATER)\\s+(.+)\\n/);
+            var text = matches[2].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
+            text = encodeURIComponent(text);
+         
+            var timestamp = getTaskTimeStamp();
+
+            var url = \"text=\" + text; 
+            url = url + \"&date=\" + timestamp.date; 
+
+            $.ajax({
+                type: \"GET\", 
+                url: \"/reschedule/?\" + url, 
+                headers: {
+                  \"apikey\": \"mykey\"
+                }
+            }).done(function(){
+               alert(\"scheduled updated\");
+               window.location = \"ORG-TASK.html\";
+            });
+        });
 
         $(\"button.itried\").click(function(){
             var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
@@ -342,6 +379,12 @@
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
 
+
+(defun task-reschedule-handler (httpcon)
+  (high-bright-look-and-feel)
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (lain-reschedule-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date"))
+  (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
 
 (defun periodic-itried-handler (httpcon)
   (high-bright-look-and-feel)
