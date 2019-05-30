@@ -142,6 +142,7 @@
      ("^.+//itried/\\(.*\\)" . periodic-itried-handler)
      ("^.+//reschedule/\\(.*\\)" . task-reschedule-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
+     ("^.+//periodic/\\(.*\\)" . periodic-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
@@ -351,7 +352,7 @@
 
 (defun calendar-view (httpcon)
   (high-bright-look-and-feel)
-  (setq lain-org-files '("/small/SMALL/PERIODIC.org" "/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+  (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
       (find-file file))
