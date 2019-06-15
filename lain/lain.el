@@ -301,6 +301,19 @@
             });
         });
 
+        var replaceLinks = function(){
+              a = $(\"pre\").text().match(/\\[\\[\\/small\\/SMALL\\/images\\/.+\\..+\\]\\[.+\\..+\\]\\]/g);
+              b = a.map(function(x){m = x.match(/\\[\\[\\/small\\/SMALL\\/images\\/.+\\..+\\]\\[(.+\\..+)\\]\\]/); return m;});
+              txt = $(\"body\").html();
+              b.forEach(function(l){
+                 txt = txt.replace(l[0], '<a href=\"/images/' +  l[1] + '\">' + l[1] + '</a>');
+              })
+              $(\"body\").html(txt);
+        }
+         
+        replaceLinks();
+
+
     });
 </script>")
 
