@@ -42,6 +42,10 @@
 (add-to-list 'load-path "~/.emacs.d/lain/")
 (require 'lain)
 
+(add-to-list 'load-path "~/.emacs.d/evil")
+(require 'evil)
+(evil-mode 1)
+
 (defun high-bright-look-and-feel ()
   (interactive)
   (set-background-color "black")
