@@ -347,46 +347,57 @@
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon lain-cookie-html))
 
-;; i might needed when working on the android client
-(defun periodic-view (httpcon)
-  (high-bright-look-and-feel)
+
+(defun org-periodic-view ()
   (setq lain-org-files '("/small/SMALL/PERIODIC.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
       (find-file file))
   (let ((org-agenda-files lain-org-files)
         (org-agenda-buffer-tmp-name "TASKS.html"))
-    (org-agenda-list))
+    (org-agenda-list)))
+
+;; i might needed when working on the android client
+(defun periodic-view (httpcon)
+  (high-bright-look-and-feel)
+  (org-periodic-view)
   (save-excursion
     (set-buffer (get-buffer-create "TASKS.html"))
     (org-agenda-write "/tmp/org/PERIODIC.html"))
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/PERIODIC.html" ">Periodic View</a></html>")))
 
-(defun calendar-view (httpcon)
-  (high-bright-look-and-feel)
+
+(defun org-calendar-view ()
   (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
       (find-file file))
   (let ((org-agenda-files lain-org-files)
         (org-agenda-buffer-tmp-name "TASKS.html"))
-    (org-agenda-list))
+    (org-agenda-list)))
+
+(defun calendar-view (httpcon)
+  (high-bright-look-and-feel)
+  (org-calendar-view)
   (save-excursion
     (set-buffer (get-buffer-create "TASKS.html"))
     (org-agenda-write "/tmp/org/VIEW.html"))
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/VIEW.html" ">Agenda View</a></html>")))
 
-(defun todo-view (httpcon)
-  (high-bright-look-and-feel)
+(defun org-todo-view ()
   (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
-      (find-file file))
+    (find-file file))
   (let ((org-agenda-files lain-org-files)
         (org-agenda-buffer-name "TASKS.html"))
-    (org-todo-list))
+    (org-todo-list)))
+
+(defun todo-view (httpcon)
+  (high-bright-look-and-feel)
+  (org-todo-view)
   (save-excursion
     (set-buffer (get-buffer-create "TASKS.html"))
     (org-agenda-write "/tmp/org/TODO.html" nil nil"TASKS.html"))
