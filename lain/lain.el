@@ -119,6 +119,7 @@
      ("^.+//calendar/\\(.*\\)" . calendar-view)
      ("^.+//periodic/\\(.*\\)" . periodic-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
+     ("^.+//chores/\\(.*\\)" . chores-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
 
@@ -378,6 +379,21 @@
     (org-agenda-write "/tmp/org/TODO.html" nil nil"TASKS.html"))
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/TODO.html" ">Todo View</a></html>")))
+
+(defun chores-view (httpcon)
+  (high-bright-look-and-feel)
+  (setq lain-org-files '("/small/SMALL/THINGS/MAINTAINANCE/chores/PROJECT.org"))
+  (lain-kill-org-buffers)
+  (dolist (file lain-org-files)
+      (find-file file))
+  (let ((org-agenda-files lain-org-files)
+        (org-agenda-buffer-name "TASKS.html"))
+    (org-todo-list))
+  (save-excursion
+    (set-buffer (get-buffer-create "TASKS.html"))
+    (org-agenda-write "/tmp/org/CHORES.html" nil nil"TASKS.html"))
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (elnode-http-return httpcon (concat "<html><a href=" "/CHORES.html" ">Chores View</a></html>")))
 
 
 (defun task-reschedule-handler (httpcon)
