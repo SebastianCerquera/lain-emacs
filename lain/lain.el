@@ -120,7 +120,7 @@
      ("^.+//periodic/\\(.*\\)" . periodic-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//chores/\\(.*\\)" . chores-view)
-     ("^.+//chores/\\(.*\\)" . signal-view)
+     ("^.+//signal/\\(.*\\)" . signal-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
 
@@ -402,8 +402,7 @@
 (defun signal-view (httpcon)
   (high-bright-look-and-feel)
   (find-file "/small/SMALL/SIGNAL.org")
-  (set-buffer (current-buffer))
-  (org-agenda-write "/tmp/org/SIGNAL.html" nil nil"TASKS.html")
+  (org-agenda-write-tmp "/tmp/org/SIGNAL.html")
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/SIGNAL.html" ">Signal View</a></html>")))
 
