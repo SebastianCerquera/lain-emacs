@@ -346,7 +346,7 @@
 
 
 (defun org-calendar-view ()
-  (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org"))
+  (setq lain-org-files '("/small/SMALL/WORK/PROJECT.org" "/small/SMALL/THINGS/PROJECT.org" "/small/SMALL/SKILLS/PROJECT.org" "/small/SMALL/THINGS/MAINTAINANCE/chores/PROJECT.org"))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
       (find-file file))
