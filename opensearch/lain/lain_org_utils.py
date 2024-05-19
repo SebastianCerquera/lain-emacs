@@ -101,12 +101,17 @@ class OrgFileDiscovery:
     def discover_files(directory: str) -> List[str]:
         return [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.org')]
     
-class OrgDatabase:
-    @staticmethod
-    def persist(org_file: OrgFile):
-        # Dummy implementation, replace with actual database logic
+class OrgDatabase(OrgVisitor):
+
+    def visit_org_file(self, org_file: OrgFile):
         print(f"Persisting org file: {org_file.root.title}")
 
+    def visit_org_task(self, task: OrgTask):
+        print(f"Persisting org task: {task.title}")
+
+    def visit_org_thread(self, thread: OrgThread):
+        print(f"Persisting org thread: {thread.timestamp}")
+    
 class OrgParser:
 
     @staticmethod
@@ -135,6 +140,8 @@ class OrgParser:
 
         org_file.accept(OrgParserVisitor())
         org_file.accept(CleaningVisitor())
+
+        org_file.accept(OrgDatabase())
 
         return org_file
 
@@ -191,9 +198,4 @@ class OrgModule:
     def run(self):
         files = OrgFileDiscovery.discover_files("sample_files")
         for file_path in files:
-            org_file = OrgParser.parse(file_path)
-            self._process_org_file(org_file)
-
-    def _process_org_file(self, org_file: OrgFile):
-        org_file.accept(CleaningVisitor())
-        OrgDatabase.persist(org_file)
+            OrgParser.parse(file_path)
