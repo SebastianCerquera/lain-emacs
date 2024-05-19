@@ -3,4 +3,5 @@
 *.#*
 *.swp
 opensearch/tests/__pycache__/*
+opensearch/lain/__pycache__/*
 opensearch/org/*
