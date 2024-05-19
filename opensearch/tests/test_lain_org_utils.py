@@ -75,5 +75,26 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         # given:
         org_file = self.utils.parse(self.file_path)
 
+        org_task = org_file.root.children[2]
+
         # when, then:
-        self.assertEqual(len(org_file.root.children[1].threads), 0)
+        self.assertEqual(len(org_task.threads), 2)
+        self.assertEqual(org_task.threads[0].timestamp, datetime.datetime(2024, 5, 19))
+        self.assertEqual(org_task.threads[1].timestamp, datetime.datetime(2024, 5, 19))
+
+    def test_parse_creates_empty_task(self):
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when:
+        task = org_file.root.children[4]
+     
+        # then:
+        self.assertEqual(len(task.threads), 0)
+        
+    def test_parse_org_thread_non_lain_entry(self):
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when, then:
+        self.assertEqual(len(org_file.root.children[3].threads), 0)

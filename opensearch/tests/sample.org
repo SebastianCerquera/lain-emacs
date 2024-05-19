@@ -2,13 +2,20 @@
 #+TODO: NO_STATE LATER | CANCELED
 
 * NO_STATE TITLE
+  :LOGBOOK:
+  :END:
   - <2024-05-18> My test title
     - <2024-05-19> My test title 3
 ** NO_STATE TITLE 2
+   :PROPERTIES:
+   :END:
    - <2024-05-18> My test title 2
 ** NO_STATE TITLE 3
 ** NO_STATE TITLE 4
+   - <2024-05-19> My test title 4
+     - No timestamp
 ** NO_STATE TITLE 5
+   - State "CANCELED"       from "CHECK"      [2023-11-12 Sun 08:12]
 ** NO_STATE TITLE 6
 ** NO_STATE TITLE 7
 ** NO_STATE TITLE 8

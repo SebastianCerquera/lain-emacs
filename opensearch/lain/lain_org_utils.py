@@ -60,9 +60,6 @@ class OrgTask(OrgTaskComponent):
             child.accept(visitor)
 
 class OrgThread(OrgThreadComponent):
-    @staticmethod
-    def parse(raw: str) -> OrgThreadComponent:
-        return OrgThread(raw)
     
     def __init__(self, content: str, parent: Optional['OrgThread'] = None, 
                  timestamp: Optional[datetime.datetime] = None):
@@ -110,7 +107,7 @@ class OrgDatabase(OrgVisitor):
         print(f"Persisting org task: {task.title}")
 
     def visit_org_thread(self, thread: OrgThread):
-        print(f"Persisting org thread: {thread.content}")
+        print(f"Persisting org thread: {thread.timestamp if thread.timestamp else thread.raw}")
     
 class OrgParser:
 
@@ -155,11 +152,32 @@ class OrgParserVisitor(OrgVisitor):
         if task.org_node.body is None:
             return
         
-        lines = task.org_node.body.split('\n')
+        if task.org_node.body == '' or re.match(r'[\s\t]*$', task.org_node.body):
+            return
 
-        for i in range(len(lines)):
-            if lines[i] != '':
-                task.add_thread(OrgThread("\n".join(lines[i:])))
+        if re.match(r'[\n]*$', task.org_node.body):
+            return
+        
+        lines = task.org_node.body.split('\n')
+        if len(lines) == 0:
+            return
+
+        start = 0
+        while start < len(lines) and not re.match(r'^\s+- (State)?', lines[start]):
+            start += 1
+
+        if start == len(lines):
+            return
+
+        parent = OrgThread("\n".join(lines[start:]))
+        task.add_thread(parent)
+
+        for i in range(start + 1, len(lines)):
+            if lines[i] != '' and re.match(r'^\s+- ', lines[i]):
+                thread = OrgThread("\n".join(lines[i:]))
+                parent.add_child(thread)
+
+                task.add_thread(thread)
 
     def visit_org_thread(self, thread: OrgThread):
         pass
