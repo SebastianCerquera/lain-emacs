@@ -27,8 +27,13 @@ class OrgFile(OrgFileComponent):
         self.tasks = tasks
         self.root = root
 
+        self.tasks.append(root)
+
     def accept(self, visitor):
         visitor.visit_org_file(self)
+
+        self.root.accept(visitor)
+
 
 class OrgTask(OrgTaskComponent):
     def __init__(self, node: orgparse.node.OrgNode, title: Optional[str] = None, 
@@ -105,57 +110,52 @@ class OrgDatabase:
 class OrgParser:
 
     @staticmethod
+    def _parse_tasks(node: orgparse.node.OrgNode, parent: Optional[OrgTask] = None) -> List[OrgTask]:
+        if node is None:
+            return []
+
+        task = OrgTask(node)
+
+        if parent:
+            task.parent = parent
+            parent.add_child(task)
+
+        if len(node.children) == 0:
+            return [task]
+        
+        return [task] + [nested_task for child in node.children
+                    for nested_task in OrgParser._parse_tasks(child, parent=task)]
+
+    @staticmethod
     def parse(file_path: str) -> OrgFile:
         org_tree = orgparse.load(file_path)
 
-        root = OrgTask(org_tree.children[0])
-        root.accept(CleaningVisitor())
-        thread = OrgThread(root.org_node.body)
-        root.threads = OrgParser._parse_thread(thread)
+        tasks = OrgParser._parse_tasks(org_tree.children[0])
+        org_file = OrgFile(tasks[0], tasks[1:])
 
-        tasks = [root]
-        for node in org_tree.children[0].children:
-            tasks = tasks + OrgParser._parse_task(root, node)
-
-        return OrgFile(root, tasks)
-    
-    @staticmethod
-    def _parse_task(parent: OrgTask, node: orgparse.node.OrgNode) -> List[OrgTask]:
-        task = OrgTask(node)
-        task.accept(CleaningVisitor())
-
-        task.parent = parent
-        parent.add_child(task)
-
-        thread = OrgThread(task.org_node.body)
-        task.threads = OrgParser._parse_thread(thread)
-
-        return [task] + [ nested_task for child in node.children 
-                         for nested_task in OrgParser._parse_task(task, child)]
-    
-    @staticmethod
-    def _parse_thread(thread: OrgThread) -> List[OrgThread]:
-        thread.accept(CleaningVisitor())
-        if thread.raw is None or thread.raw == '':
-            return []
-        
-        lines = thread.raw.split('\n')
-        if len(lines) == 1:
-            return [thread]
-
-        return [thread] + [ nested_thread for i in range(1, len(lines))
-                         for nested_thread in OrgParser._parse_thread(OrgThread('\n'.join(lines[i:])))]
-
-class OrgModule:
-    def run(self):
-        files = OrgFileDiscovery.discover_files("sample_files")
-        for file_path in files:
-            org_file = OrgParser.parse(file_path)
-            self._process_org_file(org_file)
-
-    def _process_org_file(self, org_file: OrgFile):
+        org_file.accept(OrgParserVisitor())
         org_file.accept(CleaningVisitor())
-        OrgDatabase.persist(org_file)
+
+        return org_file
+
+
+class OrgParserVisitor(OrgVisitor):
+ 
+    def visit_org_file(self, org_file: OrgFile):
+        pass
+
+    def visit_org_task(self, task: OrgTask):
+        if task.org_node.body is None:
+            return
+        
+        lines = task.org_node.body.split('\n')
+
+        for i in range(len(lines)):
+            if lines[i] != '':
+                task.add_thread(OrgThread("\n".join(lines[i:])))
+
+    def visit_org_thread(self, thread: OrgThread):
+        pass
 
 # Visitor Implementations
 class CleaningVisitor(OrgVisitor):
@@ -186,3 +186,14 @@ class CleaningVisitor(OrgVisitor):
         while current.parent and not current.timestamp:
             current = current.parent
         org_thread.timestamp = current.timestamp
+
+class OrgModule:
+    def run(self):
+        files = OrgFileDiscovery.discover_files("sample_files")
+        for file_path in files:
+            org_file = OrgParser.parse(file_path)
+            self._process_org_file(org_file)
+
+    def _process_org_file(self, org_file: OrgFile):
+        org_file.accept(CleaningVisitor())
+        OrgDatabase.persist(org_file)

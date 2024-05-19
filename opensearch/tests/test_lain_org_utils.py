@@ -42,7 +42,7 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         org_file = self.utils.parse(self.file_path)
 
         # when:
-        parent_task = org_file.tasks[0]
+        parent_task = org_file.root
         child_task = parent_task.children[0]
         
         # then:
