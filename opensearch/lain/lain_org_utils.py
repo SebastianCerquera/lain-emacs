@@ -110,7 +110,7 @@ class OrgDatabase(OrgVisitor):
         print(f"Persisting org task: {task.title}")
 
     def visit_org_thread(self, thread: OrgThread):
-        print(f"Persisting org thread: {thread.timestamp}")
+        print(f"Persisting org thread: {thread.content}")
     
 class OrgParser:
 
@@ -166,7 +166,7 @@ class OrgParserVisitor(OrgVisitor):
 
 # Visitor Implementations
 class CleaningVisitor(OrgVisitor):
-    TIMESTAMP_REGEX = r'- <(\d{4}-\d{2}-\d{2})>'
+    TIMESTAMP_REGEX = r'- <(\d{4}-\d{2}-\d{2})[\w\s]*>'
 
     def visit_org_file(self, org_file: OrgFile):
         pass
@@ -181,7 +181,7 @@ class CleaningVisitor(OrgVisitor):
             self._set_lowest_timestamp(org_thread)
 
     def _clean_content(self, org_thread: OrgThread):
-        org_thread.content = re.sub(self.TIMESTAMP_REGEX, '', org_thread.raw.split('\n')[0]).strip()
+        org_thread.content = re.sub(self.TIMESTAMP_REGEX, '', org_thread.raw).strip()
 
     def _extract_and_set_timestamp(self, org_thread: OrgThread):
         match = re.search(self.TIMESTAMP_REGEX, org_thread.raw)

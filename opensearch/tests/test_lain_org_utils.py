@@ -58,7 +58,7 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         self.assertEqual(org_file.root.threads[0].raw, """  - <2024-05-18> My test title
     - <2024-05-19> My test title 3""")
         self.assertEqual(org_file.root.threads[0].timestamp, datetime.datetime(2024, 5, 18))
-        self.assertEqual(org_file.root.threads[0].content, "My test title") 
+        self.assertEqual(org_file.root.threads[0].content, "My test title\n     My test title 3") 
         self.assertEqual(org_file.root.threads[1].content, "My test title 3") 
 
     def test_parse_creates_second_level_tasks_org_thread(self):
