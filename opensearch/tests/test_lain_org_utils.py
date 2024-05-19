@@ -55,10 +55,10 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         # when, then:
         self.assertEqual(len(org_file.root.threads), 2)
         self.assertIsInstance(org_file.root.threads[0], OrgThread)
-        self.assertEqual(org_file.root.threads[0].raw, """  - <2024-05-18> My test title
-    - <2024-05-19> My test title 3""")
+        self.assertEqual(org_file.root.threads[0].raw, """- <2024-05-18> My test title
+- <2024-05-19> My test title 3""")
         self.assertEqual(org_file.root.threads[0].timestamp, datetime.datetime(2024, 5, 18))
-        self.assertEqual(org_file.root.threads[0].content, "My test title\n     My test title 3") 
+        self.assertEqual(org_file.root.threads[0].content, "My test title\n My test title 3") 
         self.assertEqual(org_file.root.threads[1].content, "My test title 3") 
 
     def test_parse_creates_second_level_tasks_org_thread(self):
@@ -68,7 +68,7 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         # when, then:
         self.assertEqual(len(org_file.root.children[0].threads), 1)
         self.assertIsInstance(org_file.root.children[0].threads[0], OrgThread)
-        self.assertEqual(org_file.root.children[0].threads[0].raw, "   - <2024-05-18> My test title 2")
+        self.assertEqual(org_file.root.children[0].threads[0].raw, "- <2024-05-18> My test title 2")
         self.assertEqual(org_file.root.children[0].threads[0].content, "My test title 2") 
 
     def test_parse_creates_empty_second_level_tasks_org_thread(self):

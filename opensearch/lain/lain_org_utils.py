@@ -144,6 +144,8 @@ class OrgParser:
 
 
 class OrgParserVisitor(OrgVisitor):
+
+    LAIN_ENTRY_PATTERN = r'- <?(\d{4}-\d{2}-\d{2})?[\w\s]*>?(.*)'
  
     def visit_org_file(self, org_file: OrgFile):
         pass
@@ -157,27 +159,26 @@ class OrgParserVisitor(OrgVisitor):
 
         if re.match(r'[\n]*$', task.org_node.body):
             return
-        
-        lines = task.org_node.body.split('\n')
+         
+        lines = re.findall(self.LAIN_ENTRY_PATTERN, task.org_node.body)
         if len(lines) == 0:
             return
 
         start = 0
-        while start < len(lines) and not re.match(r'^\s+- (State)?', lines[start]):
-            start += 1
+        #while start < len(lines) and not re.match(r'^\s+- (State)?', lines[start]):
+        #    start += 1
 
         if start == len(lines):
             return
 
-        parent = OrgThread("\n".join(lines[start:]))
+        parent = OrgThread("\n".join(map(lambda e: f"- <{e[0]}> {e[1].strip()}", lines[start:])))
         task.add_thread(parent)
 
         for i in range(start + 1, len(lines)):
-            if lines[i] != '' and re.match(r'^\s+- ', lines[i]):
-                thread = OrgThread("\n".join(lines[i:]))
-                parent.add_child(thread)
+            thread = OrgThread("\n".join(map(lambda e: f"- <{e[0]}> {e[1].strip()}", lines[i:])))
+            parent.add_child(thread)
 
-                task.add_thread(thread)
+            task.add_thread(thread)
 
     def visit_org_thread(self, thread: OrgThread):
         pass
