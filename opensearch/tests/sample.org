@@ -1,0 +1,7 @@
+#+TODO: TODO IN_PROGRESS CHECK | DONE
+#+TODO: NO_STATE LATER | CANCELED
+
+* NO_STATE TITLE
+  - <2024-05-18> My test title
+** NO_STATE TITLE 2
+   - <2024-05-18> My test title 2

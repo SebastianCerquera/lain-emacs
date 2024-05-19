@@ -2,3 +2,5 @@
 *#*#
 *.#*
 *.swp
+opensearch/tests/__pycache__/*
+opensearch/org/*
