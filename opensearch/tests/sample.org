@@ -17,7 +17,10 @@
 ** NO_STATE TITLE 5
    - State "CANCELED"       from "CHECK"      [2023-11-12 Sun 08:12]
 ** NO_STATE TITLE 6
+   - <2024-05-20> This is a multiline thread,
+      this is still part of the thread content.
 ** NO_STATE TITLE 7
+   - No timestamp
 ** NO_STATE TITLE 8
 ** NO_STATE TITLE 9
 ** NO_STATE TITLE 10

@@ -56,9 +56,9 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         self.assertEqual(len(org_file.root.threads), 2)
         self.assertIsInstance(org_file.root.threads[0], OrgThread)
         self.assertEqual(org_file.root.threads[0].raw, """- <2024-05-18> My test title
-- <2024-05-19> My test title 3""")
+    - <2024-05-19> My test title 3""")
         self.assertEqual(org_file.root.threads[0].timestamp, datetime.datetime(2024, 5, 18))
-        self.assertEqual(org_file.root.threads[0].content, "My test title\n My test title 3") 
+        self.assertEqual(org_file.root.threads[0].content, "My test title\n     My test title 3") 
         self.assertEqual(org_file.root.threads[1].content, "My test title 3") 
 
     def test_parse_creates_second_level_tasks_org_thread(self):
@@ -87,7 +87,7 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         org_file = self.utils.parse(self.file_path)
 
         # when:
-        task = org_file.root.children[4]
+        task = org_file.root.children[7]
      
         # then:
         self.assertEqual(len(task.threads), 0)
@@ -98,3 +98,32 @@ class TestLainOrgUtilsParse(unittest.TestCase):
 
         # when, then:
         self.assertEqual(len(org_file.root.children[3].threads), 0)
+
+    def test_parse_org_thread_with_multiline_entry(self):        
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when
+        org_task = org_file.root.children[4]
+        
+        #then:
+        self.assertEqual(len(org_task.threads), 1)
+        self.assertEqual(org_task.threads[0].timestamp, datetime.datetime(2024, 5, 20))
+        self.assertEqual(org_task.threads[0].raw, """- <2024-05-20> This is a multiline thread,
+      this is still part of the thread content.""")
+        self.assertEqual(org_task.threads[0].content, """This is a multiline thread,
+      this is still part of the thread content.""")
+        
+    def test_parse_org_thread_with_no_time_stamp(self):        
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when
+        org_task = org_file.root.children[5]
+        
+        #then:
+        self.assertEqual(len(org_task.threads), 1)
+        self.assertEqual(org_task.threads[0].raw, "- No timestamp")
+        self.assertEqual(org_task.threads[0].content, "No timestamp")
+
+        self.assertEqual(org_task.threads[0].timestamp, datetime.datetime.now().date())

@@ -76,20 +76,27 @@ class OrgTask(OrgTaskComponent):
 
     def accept(self, visitor):
         visitor.visit_org_task(self)
-        for thread in self.threads:
-            thread.accept(visitor)
+
         for child in self.children:
             child.accept(visitor)
 
+        for thread in self.threads:
+            thread.accept(visitor)
+
 class OrgThread(OrgThreadComponent):
     
-    def __init__(self, content: str, parent: Optional['OrgThread'] = None, 
-                 timestamp: Optional[datetime.datetime] = None):
-        self.raw = content
+    def __init__(self, raw: str, task: OrgTask,  
+                 parent: Optional['OrgThread'] = None, 
+                 timestamp: Optional[datetime.datetime] = None,
+                 content: Optional[str] = None):
+        self.raw = raw
         self.parent = parent
         self.timestamp = timestamp
         self.children = []
-        self.content = None
+        self.content = content
+
+        task.add_thread(self)
+        self.task = task
 
     def add_child(self, child: 'OrgThread'):
         child.parent = self
@@ -205,7 +212,11 @@ class OrgDatabase(OrgVisitor):
 
 class OrgParserVisitor(OrgVisitor):
 
-    LAIN_ENTRY_PATTERN = r'- <?(\d{4}-\d{2}-\d{2})?[\w\s]*>?(.*)'
+    LAIN_ENTRY_PATTERN = r'[\s\t\n]+-\s(<\d{4}-\d{2}-\d{2}[\w\s]*>)?(.*)'
+
+    LAIN_THREAD_PATTERN = r'-\s(<\d{4}-\d{2}-\d{2}[\w\s]*>)?(.*)'
+
+    EMACS_TIMESTAMP_PATTERN = r'<(\d{4}-\d{2}-\d{2})[\w\s]*>'
  
     def visit_org_file(self, org_file: OrgFile):
         pass
@@ -214,27 +225,45 @@ class OrgParserVisitor(OrgVisitor):
         if task.org_node.body is None:
             return
         
-        if task.org_node.body == '' or re.match(r'[\s\t]*$', task.org_node.body):
+        if task.org_node.body == '' or re.match(r'[\s\t\n]*$', task.org_node.body):
             return
 
-        if re.match(r'[\n]*$', task.org_node.body):
+        entries = re.findall(self.LAIN_ENTRY_PATTERN, task.org_node.body, flags=re.DOTALL)
+        if entries is None or len(entries) == 0:
             return
-         
-        lines = re.findall(self.LAIN_ENTRY_PATTERN, task.org_node.body)
-        if len(lines) == 0:
-            return
-
-        parent = OrgThread("\n".join(map(lambda e: f"- <{e[0]}> {e[1].strip()}", lines)))
-        task.add_thread(parent)
-
-        for i in range(1, len(lines)):
-            thread = OrgThread("\n".join(map(lambda e: f"- <{e[0]}> {e[1].strip()}", lines[i:])))
-            parent.add_child(thread)
-
-            task.add_thread(thread)
+        
+        if re.match(r'[\s\t\n]*$', entries[0][0]):
+            OrgThread(f"- {entries[0][1].strip()}", task)
+        else:
+            OrgThread(f"- {entries[0][0].strip()} {entries[0][1].strip()}", task)
+        
 
     def visit_org_thread(self, thread: OrgThread):
-        pass
+        thread_fields = re.match(OrgParserVisitor.LAIN_THREAD_PATTERN, thread.raw, flags=re.DOTALL)
+
+        if not thread_fields:
+            return
+        
+        if thread_fields.group(1) is None:
+            return
+        
+        date_text = re.match(OrgParserVisitor.EMACS_TIMESTAMP_PATTERN, thread_fields.group(1))
+        
+        if date_text:
+            thread.timestamp = datetime.datetime.strptime(date_text.group(1), '%Y-%m-%d') 
+
+        thread.content = thread_fields.group(2).strip()
+
+        subthreads = re.findall(self.LAIN_ENTRY_PATTERN, thread.content, flags=re.DOTALL)
+        if len(subthreads) == 0:
+            return
+
+        subthreads = [f"- {line[0].strip()} {line[1].strip()}\n" for line in subthreads]
+        subthreads[-1] = subthreads[-1].strip()
+        
+        for subthread in subthreads:
+            thread.add_child(OrgThread("".join(subthread), thread.task))
+
 
 # Visitor Implementations
 class CleaningVisitor(OrgVisitor):
@@ -253,7 +282,11 @@ class CleaningVisitor(OrgVisitor):
             self._set_lowest_timestamp(org_thread)
 
     def _clean_content(self, org_thread: OrgThread):
-        org_thread.content = re.sub(self.TIMESTAMP_REGEX, '', org_thread.raw).strip()
+        if re.match(self.TIMESTAMP_REGEX, org_thread.raw):
+            org_thread.content = re.sub(self.TIMESTAMP_REGEX, '', org_thread.raw).strip()
+        else:
+            org_thread.content = re.sub(r'^-', '', org_thread.raw).strip()
+
 
     def _extract_and_set_timestamp(self, org_thread: OrgThread):
         match = re.search(self.TIMESTAMP_REGEX, org_thread.raw)
@@ -264,7 +297,11 @@ class CleaningVisitor(OrgVisitor):
         current = org_thread
         while current.parent and not current.timestamp:
             current = current.parent
-        org_thread.timestamp = current.timestamp
+
+        if current.timestamp:
+            org_thread.timestamp = current.timestamp
+        else:
+            org_thread.timestamp = datetime.datetime.now().date()
 
 
 
@@ -297,8 +334,6 @@ class OrgParser:
         org_file.accept(OrgParserVisitor())
         org_file.accept(CleaningVisitor())
 
-        org_file.accept(OrgDatabase())
-
         return org_file
 
 class OrgFileDiscovery:
@@ -310,4 +345,4 @@ class OrgModule:
     def run(self):
         files = OrgFileDiscovery.discover_files("sample_files")
         for file_path in files:
-            OrgParser.parse(file_path)
+            OrgParser.parse(file_path).accept(OrgDatabase())
