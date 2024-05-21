@@ -1,15 +1,27 @@
 import os
 import re
 import datetime
+
+from opensearchpy import OpenSearch
+
 from abc import ABC, abstractmethod
 from typing import List, Optional
 
 import orgparse
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 # Base Classes
 class OrgEntity(ABC):
+
     @abstractmethod
     def accept(self, visitor):
+        pass
+
+    @abstractmethod
+    def to_json(self):
         pass
 
 class OrgFileComponent(OrgEntity):
@@ -28,6 +40,11 @@ class OrgFile(OrgFileComponent):
         self.root = root
 
         self.tasks.append(root)
+
+    def to_json(self):
+        return {
+            'file_path': "Sample file path",
+        }
 
     def accept(self, visitor):
         visitor.visit_org_file(self)
@@ -52,6 +69,11 @@ class OrgTask(OrgTaskComponent):
     def add_thread(self, thread: 'OrgThreadComponent'):
         self.threads.append(thread)
 
+    def to_json(self):
+        return {
+            'task_title': self.title
+        }
+
     def accept(self, visitor):
         visitor.visit_org_task(self)
         for thread in self.threads:
@@ -73,6 +95,12 @@ class OrgThread(OrgThreadComponent):
         child.parent = self
         self.children.append(child)
 
+    def to_json(self):
+        return {
+            'thread_date': self.timestamp,
+            "thread_body": self.content
+        }
+
     def accept(self, visitor):
         visitor.visit_org_thread(self)
         for child in self.children:
@@ -92,55 +120,87 @@ class OrgVisitor(ABC):
     def visit_org_thread(self, org_thread: OrgThreadComponent):
         pass
 
-# Features
-class OrgFileDiscovery:
-    @staticmethod
-    def discover_files(directory: str) -> List[str]:
-        return [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.org')]
-    
+# Features 
 class OrgDatabase(OrgVisitor):
 
+    index_settings = {
+      "settings": {
+          "index": {
+            "number_of_shards": "1",
+            "analysis": {
+              "analyzer": {
+                "ma": {
+                  "tokenizer": "mt"
+                }
+              },
+              "tokenizer": {
+                "mt": {
+                  "type": "whitespace"
+                }
+              }
+            },
+            "number_of_replicas": "1"
+          }
+        },
+      "mappings": {
+          "properties": {
+            "task_title": {
+              "type": "text",
+              "term_vector": "yes",
+              "analyzer" : "ma",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "file_path": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
+            "thread_body": {
+              "type": "text",
+              "term_vector": "yes",
+              "analyzer" : "ma",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            }, 
+            "thread_date": {
+              "type": "date",
+            }
+          }
+        }
+      }
+    
+
+    
+    def __init__(self, index_name: str = 'my-org-index-2024-05-21--1'):
+        endpoint = os.getenv("OPENSEARCH_ENDPOINT")
+
+        self.index_name = index_name
+        self.elasticsearch = OpenSearch(endpoint, verify_certs=False)
+
+        if not self.elasticsearch.indices.exists(index=index_name):
+            self.elasticsearch.indices.create(index=index_name, body=self.index_settings)
+        
     def visit_org_file(self, org_file: OrgFile):
-        print(f"Persisting org file: {org_file.root.title}")
+        pass
 
     def visit_org_task(self, task: OrgTask):
-        print(f"Persisting org task: {task.title}")
+        pass
 
     def visit_org_thread(self, thread: OrgThread):
-        print(f"Persisting org thread: {thread.timestamp if thread.timestamp else thread.raw}")
-    
-class OrgParser:
-
-    @staticmethod
-    def _parse_tasks(node: orgparse.node.OrgNode, parent: Optional[OrgTask] = None) -> List[OrgTask]:
-        if node is None:
-            return []
-
-        task = OrgTask(node)
-
-        if parent:
-            task.parent = parent
-            parent.add_child(task)
-
-        if len(node.children) == 0:
-            return [task]
-        
-        return [task] + [nested_task for child in node.children
-                    for nested_task in OrgParser._parse_tasks(child, parent=task)]
-
-    @staticmethod
-    def parse(file_path: str) -> OrgFile:
-        org_tree = orgparse.load(file_path)
-
-        tasks = OrgParser._parse_tasks(org_tree.children[0])
-        org_file = OrgFile(tasks[0], tasks[1:])
-
-        org_file.accept(OrgParserVisitor())
-        org_file.accept(CleaningVisitor())
-
-        org_file.accept(OrgDatabase())
-
-        return org_file
+        self.elasticsearch.index(index=self.index_name, body=thread.to_json())
 
 
 class OrgParserVisitor(OrgVisitor):
@@ -212,6 +272,46 @@ class CleaningVisitor(OrgVisitor):
         while current.parent and not current.timestamp:
             current = current.parent
         org_thread.timestamp = current.timestamp
+
+
+
+class OrgParser:
+
+    @staticmethod
+    def _parse_tasks(node: orgparse.node.OrgNode, parent: Optional[OrgTask] = None) -> List[OrgTask]:
+        if node is None:
+            return []
+
+        task = OrgTask(node)
+
+        if parent:
+            task.parent = parent
+            parent.add_child(task)
+
+        if len(node.children) == 0:
+            return [task]
+        
+        return [task] + [nested_task for child in node.children
+                    for nested_task in OrgParser._parse_tasks(child, parent=task)]
+
+    @staticmethod
+    def parse(file_path: str) -> OrgFile:
+        org_tree = orgparse.load(file_path)
+
+        tasks = OrgParser._parse_tasks(org_tree.children[0])
+        org_file = OrgFile(tasks[0], tasks[1:])
+
+        org_file.accept(OrgParserVisitor())
+        org_file.accept(CleaningVisitor())
+
+        org_file.accept(OrgDatabase())
+
+        return org_file
+
+class OrgFileDiscovery:
+    @staticmethod
+    def discover_files(directory: str) -> List[str]:
+        return [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.org')]
 
 class OrgModule:
     def run(self):
