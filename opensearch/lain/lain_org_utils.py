@@ -224,17 +224,10 @@ class OrgParserVisitor(OrgVisitor):
         if len(lines) == 0:
             return
 
-        start = 0
-        #while start < len(lines) and not re.match(r'^\s+- (State)?', lines[start]):
-        #    start += 1
-
-        if start == len(lines):
-            return
-
-        parent = OrgThread("\n".join(map(lambda e: f"- <{e[0]}> {e[1].strip()}", lines[start:])))
+        parent = OrgThread("\n".join(map(lambda e: f"- <{e[0]}> {e[1].strip()}", lines)))
         task.add_thread(parent)
 
-        for i in range(start + 1, len(lines)):
+        for i in range(1, len(lines)):
             thread = OrgThread("\n".join(map(lambda e: f"- <{e[0]}> {e[1].strip()}", lines[i:])))
             parent.add_child(thread)
 
