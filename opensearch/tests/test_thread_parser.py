@@ -23,17 +23,18 @@ class ThreadParserTest(unittest.TestCase):
         for i, thread in enumerate(threads):
             self.assertEqual(thread.content, None)
             self.assertEqual(thread.timestamp, None)
-            self.assertEqual(thread.raw, f" <2024-05-{i + 18}> My test title {i + 1}")
+            self.assertEqual(thread.raw, f"- <2024-05-{i + 18}> My test title {i + 1}")
 
     def test_parser_thread_body_is_indented_multibullet_list(self):
         #given:
         task = OrgTask(None)
 
         #when: 
-        threads = ThreadParser.parse_raw("""   - <2024-05-18> My test title 1
+        threads = ThreadParser.parse_raw("""
+   - <2024-05-18> My test title 1
    - <2024-05-19> My test title 2
    - <2024-05-20> My test title 3""", task=task, is_root=True)
-
+        
         #then: 
         self.assertEqual(len(threads), 3)
         self.assertEqual(len(task.threads), 3)
@@ -41,7 +42,7 @@ class ThreadParserTest(unittest.TestCase):
         for i, thread in enumerate(threads):
             self.assertEqual(thread.content, None)
             self.assertEqual(thread.timestamp, None)
-            self.assertEqual(thread.raw, f" <2024-05-{i + 18}> My test title {i + 1}")
+            self.assertEqual(thread.raw, f"- <2024-05-{i + 18}> My test title {i + 1}")
 
     def test_parser_thread_body_list_is_indented(self):
         #given:
@@ -86,11 +87,11 @@ class ThreadParserTest(unittest.TestCase):
     def test_parse_org_thread_with_nested_thread(self):        
         #given:
         task = OrgTask(None)
-        thread = OrgThread("""<2024-05-11> Parent line
+        thread = OrgThread("""- <2024-05-11> Parent line
   - <2024-05-12> Child line""", task=task)
 
         #when: 
-        self.parser.parse_thread(thread)
+        self.parser.parse_thread(thread)        
 
         #then: 
         self.assertEqual(len(thread.children), 1)
@@ -121,6 +122,8 @@ class ThreadParserTest(unittest.TestCase):
 
         #when: 
         threads = ThreadParser.parse_raw(""":LOGBOOK:
+CLOCK: [2024-05-14 mar 13:51]--[2024-05-14 mar 17:34] =>  3:43
+CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 :END:
 - <2024-05-18> line 1""", task=task, is_root=True)
         thread = threads[0]
@@ -185,7 +188,8 @@ class ThreadParserTest(unittest.TestCase):
     def test_parse_org_thread_with_nested_thread_with_no_timestamp(self):        
         #given:
         task = OrgTask(None)
-        threads = ThreadParser.parse_raw("""    - <2024-05-17 vie> Line 1
+        threads = ThreadParser.parse_raw("""
+    - <2024-05-17 vie> Line 1
       - Line 2
         Line 3
         Line 4

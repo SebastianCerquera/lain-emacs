@@ -212,14 +212,14 @@ class OrgDatabase(OrgVisitor):
 
 class ThreadParser():
 
-    ORG_BULLET_PATTERN = r'\s*<(\d{4}-\d{2}-\d{2}).{0,5}>\s(.*)'
+    ORG_BULLET_PATTERN = r'-?\s*<(\d{4}-\d{2}-\d{2}).{0,5}>\s(.*)'
 
     ORG_LOG_PATTERN = r'\sState\s"(\w+)"'
 
     @staticmethod
     def parse_raw(raw: str, task: OrgTask, is_root=False) -> List[OrgThread]: 
         raw = raw.replace("\t", "    ")
-        indentation_rule = raw.find("-")
+        indentation_rule = raw.find("- ")
 
         if indentation_rule == -1:
             return
@@ -229,8 +229,11 @@ class ThreadParser():
         elif indentation_rule == 1:
             bullets = raw[indentation_rule+1:].split("\n -")
         else:
-            indentation = raw[:indentation_rule+1].split("\n")[-1]
-            bullets = raw[indentation_rule+1:].split("\n" + indentation)
+            if raw[:indentation_rule].rfind("\n") == -1:
+                bullets = ("\n" + raw).split("\n" + raw[:indentation_rule+1])
+            else:
+                new_line = raw[:indentation_rule].rfind("\n")
+                bullets = raw[new_line:].split(raw[new_line:indentation_rule+1])
 
         if not is_root:
             bullets = [raw[:indentation_rule]] + bullets
@@ -247,7 +250,7 @@ class ThreadParser():
 
         threads = []
         for bullet in bullets:
-            thread = OrgThread(bullet, task)
+            thread = OrgThread("- " + bullet.strip(), task)
 
             if is_root:
                 task.add_thread(thread)
@@ -269,7 +272,7 @@ class ThreadParser():
             new_line = body[:next_bullet].rfind("\n")
 
             subthreads = ThreadParser.parse_raw(
-                body[next_bullet:] if new_line == -1 else body[new_line+1:], thread.task)
+                body[next_bullet:] if new_line == -1 else body[new_line:], thread.task)
             
             if not subthreads:
                 thread.content = body.strip()
@@ -281,13 +284,16 @@ class ThreadParser():
                 ThreadParser.parse_thread(subthread)
                 thread.add_child(subthread)
          else:
-            subthreads = ThreadParser.parse_raw(thread.raw.strip(), thread.task)
+            next_bullet = thread.raw.find("-")
+
+            subthreads = ThreadParser.parse_raw(thread.raw[next_bullet+1:], thread.task)
 
             if not subthreads:
-                thread.content = thread.raw.strip()
+                thread.content = thread.raw[next_bullet+1:].strip()
                 thread.content = None if thread.content == '' else thread.content
             else:
-                thread.content = subthreads[0].raw.strip()
+                list_index = subthreads[0].raw.find("- ")
+                thread.content = subthreads[0].raw[list_index+2:].strip() if list_index != -1 else subthreads[0].raw.strip()
                 for subthread in subthreads[1:]:
                     ThreadParser.parse_thread(subthread)
                     thread.add_child(subthread)
