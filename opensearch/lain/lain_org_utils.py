@@ -80,8 +80,8 @@ class OrgTask(OrgTaskComponent):
         for child in self.children:
             child.accept(visitor)
 
-        for thread in self.threads:
-            thread.accept(visitor)
+        if len(self.threads) > 0:
+            self.threads[0].accept(visitor)
 
 class OrgThread(OrgThreadComponent):
     
@@ -95,8 +95,9 @@ class OrgThread(OrgThreadComponent):
         self.children = []
         self.content = content
 
-        task.add_thread(self)
         self.task = task
+
+
 
     def add_child(self, child: 'OrgThread'):
         child.parent = self
@@ -209,15 +210,93 @@ class OrgDatabase(OrgVisitor):
     def visit_org_thread(self, thread: OrgThread):
         self.elasticsearch.index(index=self.index_name, body=thread.to_json())
 
+class ThreadParser():
+
+    ORG_BULLET_PATTERN = r'\s*<(\d{4}-\d{2}-\d{2}).{0,5}>\s(.*)'
+
+    ORG_LOG_PATTERN = r'\sState\s"(\w+)"'
+
+    @staticmethod
+    def parse_raw(raw: str, task: OrgTask, is_root=False) -> List[OrgThread]: 
+        raw = raw.replace("\t", "    ")
+        indentation_rule = raw.find("-")
+
+        if indentation_rule == -1:
+            return
+
+        if indentation_rule == 0:
+            bullets = raw[indentation_rule+1:].split("\n-")
+        elif indentation_rule == 1:
+            bullets = raw[indentation_rule+1:].split("\n -")
+        else:
+            indentation = raw[:indentation_rule+1].split("\n")[-1]
+            bullets = raw[indentation_rule+1:].split("\n" + indentation)
+
+        if not is_root:
+            bullets = [raw[:indentation_rule]] + bullets
+
+        if len(bullets) == 0:
+            return
+
+        # This was to filter out empty strings produced by the split
+        bullets = list(filter(lambda x: x != '', bullets))
+        bullets = list(filter(lambda x: not re.match(r'\s+$', x), bullets))
+
+        # This was to remove the org log checks on periodic tasks
+        bullets = list(filter(lambda x: re.match(ThreadParser.ORG_LOG_PATTERN, x) is None, bullets))
+
+        threads = []
+        for bullet in bullets:
+            thread = OrgThread(bullet, task)
+
+            if is_root:
+                task.add_thread(thread)
+
+            threads.append(thread)
+
+        return threads
+
+    @staticmethod
+    def parse_thread(thread: OrgThread):
+         date_text = re.match(ThreadParser.ORG_BULLET_PATTERN, thread.raw, flags=re.DOTALL)
+        
+         if date_text:
+            thread.timestamp = datetime.datetime.strptime(date_text.group(1), '%Y-%m-%d').date()
+
+            body = date_text.group(2)
+            next_bullet = body.find("-")
+
+            new_line = body[:next_bullet].rfind("\n")
+
+            subthreads = ThreadParser.parse_raw(
+                body[next_bullet:] if new_line == -1 else body[new_line+1:], thread.task)
+            
+            if not subthreads:
+                thread.content = body.strip()
+                return
+             
+            thread.content = body[:next_bullet].strip()
+
+            for subthread in subthreads:
+                ThreadParser.parse_thread(subthread)
+                thread.add_child(subthread)
+         else:
+            subthreads = ThreadParser.parse_raw(thread.raw.strip(), thread.task)
+
+            if not subthreads:
+                thread.content = thread.raw.strip()
+                thread.content = None if thread.content == '' else thread.content
+            else:
+                thread.content = subthreads[0].raw.strip()
+                for subthread in subthreads[1:]:
+                    ThreadParser.parse_thread(subthread)
+                    thread.add_child(subthread)
+
+            if thread.content:
+                thread.timestamp = datetime.datetime.now().date()
 
 class OrgParserVisitor(OrgVisitor):
 
-    LAIN_ENTRY_PATTERN = r'[\s\t\n]+-\s(<\d{4}-\d{2}-\d{2}[\w\s]*>)?(.*)'
-
-    LAIN_THREAD_PATTERN = r'-\s(<\d{4}-\d{2}-\d{2}[\w\s]*>)?(.*)'
-
-    EMACS_TIMESTAMP_PATTERN = r'<(\d{4}-\d{2}-\d{2})[\w\s]*>'
- 
     def visit_org_file(self, org_file: OrgFile):
         pass
 
@@ -227,42 +306,12 @@ class OrgParserVisitor(OrgVisitor):
         
         if task.org_node.body == '' or re.match(r'[\s\t\n]*$', task.org_node.body):
             return
-
-        entries = re.findall(self.LAIN_ENTRY_PATTERN, task.org_node.body, flags=re.DOTALL)
-        if entries is None or len(entries) == 0:
-            return
         
-        if re.match(r'[\s\t\n]*$', entries[0][0]):
-            OrgThread(f"- {entries[0][1].strip()}", task)
-        else:
-            OrgThread(f"- {entries[0][0].strip()} {entries[0][1].strip()}", task)
+        ThreadParser.parse_raw(task.org_node.body, task, is_root=True)
         
 
     def visit_org_thread(self, thread: OrgThread):
-        thread_fields = re.match(OrgParserVisitor.LAIN_THREAD_PATTERN, thread.raw, flags=re.DOTALL)
-
-        if not thread_fields:
-            return
-        
-        if thread_fields.group(1) is None:
-            return
-        
-        date_text = re.match(OrgParserVisitor.EMACS_TIMESTAMP_PATTERN, thread_fields.group(1))
-        
-        if date_text:
-            thread.timestamp = datetime.datetime.strptime(date_text.group(1), '%Y-%m-%d') 
-
-        thread.content = thread_fields.group(2).strip()
-
-        subthreads = re.findall(self.LAIN_ENTRY_PATTERN, thread.content, flags=re.DOTALL)
-        if len(subthreads) == 0:
-            return
-
-        subthreads = [f"- {line[0].strip()} {line[1].strip()}\n" for line in subthreads]
-        subthreads[-1] = subthreads[-1].strip()
-        
-        for subthread in subthreads:
-            thread.add_child(OrgThread("".join(subthread), thread.task))
+        ThreadParser.parse_thread(thread)
 
 
 # Visitor Implementations
