@@ -136,14 +136,58 @@ class OrgDatabase(OrgVisitor):
           "index": {
             "number_of_shards": "1",
             "analysis": {
+              "filter": {
+                "english_stop": {
+                  "type":       "stop",
+                  "stopwords":  "_english_" 
+                },
+                "english_stemmer": {
+                  "type":       "stemmer",
+                  "language":   "english"
+                },
+                "spanish_stop": {
+                  "type":       "stop",
+                  "stopwords":  "_spanish_" 
+                },
+                "my_custom_stop_words_filter": {
+                  "type": "stop",
+                  "ignore_case": "true",
+                  "stopwords": [ 
+                      "En",
+                      "no",
+                      "No",
+                      "el",
+                      "El",
+                      "la",
+                      "La"
+                      ]
+                }
+              },
               "analyzer": {
                 "ma": {
-                  "tokenizer": "mt"
+                  "tokenizer": "mt",
+                  "filter": [
+                    "english_stop",
+                    "spanish_stop",
+                    "my_custom_stop_words_filter",
+                    "lowercase",
+                    "asciifolding",
+                    "classic",
+                    "delimited_payload"
+                  ]
                 }
               },
               "tokenizer": {
                 "mt": {
-                  "type": "whitespace"
+                  "type": "char_group",
+                  "tokenize_on_chars": [
+                    "whitespace",
+                    ",",
+                    ".",
+                    ";",
+                    "\n",
+                    "-"
+                  ]
                 }
               }
             },
@@ -208,7 +252,11 @@ class OrgDatabase(OrgVisitor):
         pass
 
     def visit_org_thread(self, thread: OrgThread):
-        self.elasticsearch.index(index=self.index_name, body=thread.to_json())
+        try:
+            self.elasticsearch.index(index=self.index_name, body=thread.to_json())
+        except:
+            print("###### ERRROR ######")
+            print(thread.to_json())
 
 class ThreadParser():
 
