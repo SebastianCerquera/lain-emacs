@@ -19,7 +19,7 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         org_file = self.utils.parse(self.file_path)
 
         # when, then:
-        self.assertEqual(len(org_file.tasks), 11)
+        self.assertEqual(len(org_file.tasks), 13)
         self.assertIsInstance(org_file.root, OrgTask)
         self.assertEqual(org_file.root.title, "TITLE")
 
@@ -87,6 +87,26 @@ class TestLainOrgUtilsParse(unittest.TestCase):
 
         # when
         org_task = org_file.root.children[9]
+
+        # then:
+        self.assertEqual(len(org_task.threads), 2)
+
+    def test_parse_creates_org_task_with_complex_thread(self):
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when
+        org_task = org_file.root.children[10]
+
+        # then:
+        self.assertEqual(len(org_task.threads), 1)
+
+    def test_parse_creates_org_task_with_complex_thread(self):
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when
+        org_task = org_file.root.children[11]
 
         # then:
         self.assertEqual(len(org_task.threads), 2)

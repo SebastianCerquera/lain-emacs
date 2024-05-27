@@ -28,3 +28,27 @@
 ** NO_STATE TITLE 11
    - <2024-05-25> My multithread task 1
    - <2024-05-25> My multithread task 2
+** NO_STATE TITLE 12
+   - <2024-05-15 mié> Line 1
+      Line 2
+      Line 3
+      Line 3.
+     - <2024-05-14 mar> [[some.org::title a]]
+       - <2024-05-14 mar> https://test1.com
+     - <2024-05-14 mar> [[some.org::title b]]
+       - <2024-05-13 mar> https://test2.com
+       - <2024-05-14 mar> https://test3.com
+         - Line 4
+           Line 5
+       - <2024-05-14 mar>
+         - https://test4.com
+** NO_STATE TITLE 13
+   - <2024-05-14 mar> [[some.org::title a]]
+     - <2024-05-14 mar> https://test1.com
+   - <2024-05-14 mar> [[some.org::title b]]
+     - <2024-05-13 mar> https://test2.com
+     - <2024-05-14 mar> https://test3.com
+       - Line 4
+         Line 5
+     - <2024-05-14 mar>
+       - https://test4.com

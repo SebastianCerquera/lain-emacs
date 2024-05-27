@@ -80,8 +80,8 @@ class OrgTask(OrgTaskComponent):
         for child in self.children:
             child.accept(visitor)
 
-        if len(self.threads) > 0:
-            self.threads[0].accept(visitor)
+        for thread in self.threads:
+            thread.accept(visitor)
 
 class OrgThread(OrgThreadComponent):
     
@@ -281,7 +281,6 @@ class ThreadParser():
             thread.content = body[:next_bullet].strip()
 
             for subthread in subthreads:
-                ThreadParser.parse_thread(subthread)
                 thread.add_child(subthread)
          else:
             next_bullet = thread.raw.find("-")
@@ -295,7 +294,6 @@ class ThreadParser():
                 list_index = subthreads[0].raw.find("- ")
                 thread.content = subthreads[0].raw[list_index+2:].strip() if list_index != -1 else subthreads[0].raw.strip()
                 for subthread in subthreads[1:]:
-                    ThreadParser.parse_thread(subthread)
                     thread.add_child(subthread)
 
             if thread.content:

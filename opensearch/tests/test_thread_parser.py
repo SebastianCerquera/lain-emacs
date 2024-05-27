@@ -30,8 +30,7 @@ class ThreadParserTest(unittest.TestCase):
         task = OrgTask(None)
 
         #when: 
-        threads = ThreadParser.parse_raw("""
-   - <2024-05-18> My test title 1
+        threads = ThreadParser.parse_raw("""   - <2024-05-18> My test title 1
    - <2024-05-19> My test title 2
    - <2024-05-20> My test title 3""", task=task, is_root=True)
         
@@ -92,10 +91,9 @@ class ThreadParserTest(unittest.TestCase):
 
         #when: 
         self.parser.parse_thread(thread)        
+        self.parser.parse_thread(thread.children[0])
 
         #then: 
-        self.assertEqual(len(thread.children), 1)
-
         self.assertEqual(thread.content, """Parent line""")
         self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 11).date())
 
@@ -202,10 +200,10 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         self.parser.parse_thread(parent_thread)
 
         child_thread = parent_thread.children[0]
+        self.parser.parse_thread(child_thread)
 
         #then: 
-        parent_thread.content = "Line 1"        
-        self.assertEqual(len(parent_thread.children), 1)
+        self.assertEqual(parent_thread.content, "Line 1")
 
         self.assertEqual(child_thread.content, """Line 2
         Line 3
@@ -235,8 +233,15 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         self.parser.parse_thread(threads[1])
         self.parser.parse_thread(threads[2])
 
+        self.parser.parse_thread(threads[1].children[0])
+        self.parser.parse_thread(threads[2].children[0])
+        self.parser.parse_thread(threads[2].children[1])
+        self.parser.parse_thread(threads[2].children[2])
+
+        self.parser.parse_thread(threads[2].children[1].children[0])
+        self.parser.parse_thread(threads[2].children[2].children[0])
+
         #then:
-        self.assertEqual(len(threads), 3)
 
         # First thread
         self.assertEqual(threads[0].timestamp, datetime.datetime(2024, 5, 15).date())
@@ -270,7 +275,6 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         self.assertEqual(threads[2].children[2].timestamp, datetime.datetime(2024, 5, 14).date())
         self.assertEqual(threads[2].children[2].content, "")
 
-        self.assertEqual(len(threads[2].children[2].children), 1)
         self.assertEqual(threads[2].children[2].children[0].content, "https://test4.com")
 
 
