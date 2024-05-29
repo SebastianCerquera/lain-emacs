@@ -1,5 +1,5 @@
 import unittest
-import datetime
+import string
 from lain.lain_org_utils import OrgParser, OrgTask, OrgFile, OrgThread
 
 class TestLainOrgUtilsParse(unittest.TestCase):
@@ -27,6 +27,17 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         self.assertTrue("TITLE 2" in titles)
         self.assertTrue("TITLE 10" in titles)
         self.assertTrue("TITLE 11" in titles)
+
+    def test_parse_creates_org_task_titles_are_hashed(self):
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when, then:
+        for task in org_file.tasks:
+            self.assertIsInstance(task, OrgTask)
+
+            for char in ["<", ">", ",", ".", "-", ":", "(", ")", "*"]:
+                self.assertTrue(char not in task.title)
         
     def test_parse_creates_org_task_that_are_setted(self):
         # given:
@@ -48,6 +59,17 @@ class TestLainOrgUtilsParse(unittest.TestCase):
         
         # then:
         self.assertEqual(parent_task, child_task.parent)
+
+    def test_parse_parent_thread_dont_duplicate_content(self):
+        # given:
+        org_file = self.utils.parse(self.file_path)
+
+        # when:
+        parent_task = org_file.root
+        
+        # then:
+        self.assertEqual(parent_task.threads[0].content, "My test title")
+        self.assertEqual(parent_task.threads[0].children[0].content, "My test title 3")
 
     def test_parse_creates_org_thread(self):
         # given:

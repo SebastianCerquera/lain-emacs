@@ -1,5 +1,9 @@
 import unittest
 import datetime
+
+from orgparse.node import OrgNode
+from unittest.mock import MagicMock
+
 from lain.lain_org_utils import OrgTask, OrgThread, ThreadParser
 
 
@@ -9,7 +13,10 @@ class ThreadParserTest(unittest.TestCase):
         
     def test_parser_thread_body_is_multibullet_list(self):
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
 
         #when: 
         threads = ThreadParser.parse_raw("""- <2024-05-18> My test title 1
@@ -27,7 +34,10 @@ class ThreadParserTest(unittest.TestCase):
 
     def test_parser_thread_body_is_indented_multibullet_list(self):
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
 
         #when: 
         threads = ThreadParser.parse_raw("""   - <2024-05-18> My test title 1
@@ -45,7 +55,11 @@ class ThreadParserTest(unittest.TestCase):
 
     def test_parser_thread_body_list_is_indented(self):
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         threads = [OrgThread(f"""{"".join([" " for _ in range(i)])}<2024-05-18> My test title""", task=task) for i in range(10)]
 
         #when:
@@ -59,7 +73,11 @@ class ThreadParserTest(unittest.TestCase):
 
     def test_parse_thread_list_with_no_timestamp(self):        
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         threads = [OrgThread(f"""{"".join([" " for _ in range(i)])}No timestamp""", task=task) for i in range(10)]
 
         #when:
@@ -73,7 +91,11 @@ class ThreadParserTest(unittest.TestCase):
 
     def test_parse_org_thread_with_spanish_timestamp(self):        
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         thread = OrgThread("""<2024-05-11 sáb> Spanish timestamp format""", task=task)
 
         #when: 
@@ -85,7 +107,11 @@ class ThreadParserTest(unittest.TestCase):
 
     def test_parse_org_thread_with_nested_thread(self):        
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         thread = OrgThread("""- <2024-05-11> Parent line
   - <2024-05-12> Child line""", task=task)
 
@@ -102,7 +128,11 @@ class ThreadParserTest(unittest.TestCase):
 
     def test_parse_org_thread_with_multiline_entry(self):        
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         thread = OrgThread("""<2024-05-20> This is a multiline thread,
   this is still part of the thread content.""", task=task)
 
@@ -116,7 +146,10 @@ class ThreadParserTest(unittest.TestCase):
         
     def test_parse_org_thread_with_org_properties_logbook(self):
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
 
         #when: 
         threads = ThreadParser.parse_raw(""":LOGBOOK:
@@ -133,7 +166,10 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 
     def test_parse_org_thread_with_org_properties_schedule_check(self):
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
 
         #when: 
         threads = ThreadParser.parse_raw(
@@ -148,7 +184,10 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 
     def test_parse_org_empty_thread_logbook(self):
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
 
         #when: 
         threads = ThreadParser.parse_raw(""":LOGBOOK:
@@ -159,7 +198,11 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 
     def test_parse_org_thread_with_nested_thread_and_org_properties(self):        
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         threads = ThreadParser.parse_raw(""":LOGBOOK:
 :END:
 - <2024-05-11> Parent line
@@ -173,7 +216,11 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 
     def test_parse_org_empty_thread(self):
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         thread = OrgThread("""      """, task=task)
 
         #when: 
@@ -185,7 +232,11 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 
     def test_parse_org_thread_with_nested_thread_with_no_timestamp(self):        
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
         threads = ThreadParser.parse_raw("""
     - <2024-05-17 vie> Line 1
       - Line 2
@@ -212,7 +263,10 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 
     def test_parse_org_thread_with_links_and_nested_thread(self):        
         #given:
-        task = OrgTask(None)
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
 
         #when: 
         threads = ThreadParser.parse_raw("""    - <2024-05-15 mié> Line 1

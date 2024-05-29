@@ -2,6 +2,9 @@ import os
 import re
 import datetime
 
+import string
+import random
+
 from opensearchpy import OpenSearch
 
 from abc import ABC, abstractmethod
@@ -42,9 +45,7 @@ class OrgFile(OrgFileComponent):
         self.tasks.append(root)
 
     def to_json(self):
-        return {
-            'file_path': "Sample file path",
-        }
+        raise NotImplementedError()
 
     def accept(self, visitor):
         visitor.visit_org_file(self)
@@ -53,14 +54,20 @@ class OrgFile(OrgFileComponent):
 
 
 class OrgTask(OrgTaskComponent):
-    def __init__(self, node: orgparse.node.OrgNode, title: Optional[str] = None, 
-                 parent: Optional['OrgTask'] = None, 
+
+    @classmethod
+    def generate_identifier(cls, title: str):
+        return f"TASKID{''.join(random.choices(string.printable[:62], k=len(title)))}"
+
+    def __init__(self, node: orgparse.node.OrgNode, parent: Optional['OrgTask'] = None, 
                  threads: List['OrgThreadComponent'] = None):
         self.org_node = node
-        self.title = title
+        self.title = node.heading
         self.parent = parent
         self.children = []
         self.threads = threads if threads else []
+
+        self.id = self.generate_identifier(self.title)
 
     def add_child(self, child: 'OrgTask'):
         child.parent = self
@@ -70,9 +77,7 @@ class OrgTask(OrgTaskComponent):
         self.threads.append(thread)
 
     def to_json(self):
-        return {
-            'task_title': self.title
-        }
+        raise NotImplementedError()
 
     def accept(self, visitor):
         visitor.visit_org_task(self)
@@ -106,7 +111,8 @@ class OrgThread(OrgThreadComponent):
     def to_json(self):
         return {
             'thread_date': self.timestamp,
-            "thread_body": self.content
+            "thread_body": self.content,
+            "task_id": self.task.id
         }
 
     def accept(self, visitor):
@@ -186,7 +192,7 @@ class OrgDatabase(OrgVisitor):
                     ".",
                     ";",
                     "\n",
-                    "-"
+                    "?"
                   ]
                 }
               }
@@ -227,6 +233,15 @@ class OrgDatabase(OrgVisitor):
                 }
               }
             }, 
+            "task_id": {
+              "type": "text",
+              "fields": {
+                "keyword": {
+                  "type": "keyword",
+                  "ignore_above": 256
+                }
+              }
+            },
             "thread_date": {
               "type": "date",
             }
@@ -383,6 +398,9 @@ class CleaningVisitor(OrgVisitor):
             self._set_lowest_timestamp(org_thread)
 
     def _clean_content(self, org_thread: OrgThread):
+        if org_thread.content:
+            return
+
         if re.match(self.TIMESTAMP_REGEX, org_thread.raw):
             org_thread.content = re.sub(self.TIMESTAMP_REGEX, '', org_thread.raw).strip()
         else:
