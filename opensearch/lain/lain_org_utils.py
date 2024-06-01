@@ -321,6 +321,24 @@ class ThreadParser():
             threads.append(thread)
 
         return threads
+    
+    @staticmethod
+    def _check_code_block(thread: OrgThread, content: str) -> bool:
+        start_block = content.find("\\begin{verbatim}")
+
+        if start_block == -1:
+            return False 
+        
+        if start_block == 0:
+            return True
+
+        thread.content = content[:start_block].strip()
+        
+        end_block = content.find("\\end{verbatim}")
+
+        thread.add_child(OrgThread("- " + content[start_block:end_block+13], thread.task, parent=thread))
+
+        return True
 
     @staticmethod
     def parse_thread(thread: OrgThread):
@@ -339,9 +357,13 @@ class ThreadParser():
             
             if not subthreads:
                 thread.content = body.strip()
+            else:
+                thread.content = body[:next_bullet].strip()
+
+            ThreadParser._check_code_block(thread, thread.content)
+            
+            if not subthreads:
                 return
-             
-            thread.content = body[:next_bullet].strip()
 
             for subthread in subthreads:
                 thread.add_child(subthread)
@@ -352,10 +374,17 @@ class ThreadParser():
 
             if not subthreads:
                 thread.content = thread.raw[next_bullet+1:].strip()
+
+                ThreadParser._check_code_block(thread, thread.content)
+
                 thread.content = None if thread.content == '' else thread.content
+
             else:
                 list_index = subthreads[0].raw.find("- ")
                 thread.content = subthreads[0].raw[list_index+2:].strip() if list_index != -1 else subthreads[0].raw.strip()
+
+                ThreadParser._check_code_block(thread, thread.content)
+                
                 for subthread in subthreads[1:]:
                     thread.add_child(subthread)
 

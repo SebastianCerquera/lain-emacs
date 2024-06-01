@@ -105,6 +105,67 @@ class ThreadParserTest(unittest.TestCase):
         self.assertEqual(thread.content, "Spanish timestamp format")
         self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 11).date())
 
+    def test_parse_org_thread_with_code_block(self):        
+        #given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
+        thread = OrgThread("""- <2024-05-11 sáb> 
+  \\begin{verbatim}
+    def test():
+        pass
+  \end{verbatim}""", task=task)
+
+        #when: 
+        self.parser.parse_thread(thread)
+
+        #then: 
+        self.assertEqual(len(thread.children), 0)
+        self.assertEqual(thread.content, """\\begin{verbatim}
+    def test():
+        pass
+  \end{verbatim}""")
+
+    def test_parse_org_thread_with_code_block_no_timestamp(self):
+        #given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
+        thread = OrgThread("""- 
+  \\begin{verbatim}
+  \end{verbatim}""", task=task)
+
+        #when: 
+        self.parser.parse_thread(thread)
+
+        #then: 
+        self.assertEqual(thread.content, """\\begin{verbatim}
+  \end{verbatim}""")
+        
+        self.assertEqual(len(thread.children), 0)
+
+    def test_parse_org_thread_with_code_block_creates_subthread(self):
+        #given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+
+        task = OrgTask(node)
+
+        thread = OrgThread("""- code block
+  \\begin{verbatim}
+  \end{verbatim}""", task=task)
+
+        #when: 
+        self.parser.parse_thread(thread)
+
+        #then: 
+        self.assertEqual(thread.content, "code block")  
+        self.assertEqual(len(thread.children), 1)
+
     def test_parse_org_thread_with_nested_thread(self):        
         #given:
         node = MagicMock(spec=OrgNode)
