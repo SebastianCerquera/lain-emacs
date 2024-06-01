@@ -184,7 +184,9 @@ class OrgDatabase(OrgVisitor):
                     ".",
                     ";",
                     "\n",
-                    "?"
+                    "?",
+                    "[",
+                    "]"
                   ]
                 }
               }
@@ -259,9 +261,12 @@ class OrgDatabase(OrgVisitor):
         pass
 
     def visit_org_thread(self, thread: OrgThread):
+        if "\end{verbatim}" in thread.content:
+            return
+
         try:
             self.elasticsearch.index(index=self.index_name, body=thread.to_json())
-        except:
+        except Exception as e:
             print("###### ERRROR ######")
             print(thread.to_json())
 
@@ -427,20 +432,18 @@ class CleaningVisitor(OrgVisitor):
         if thread.content is None:
             return
         
-        link = re.match(r'\[\[(.+)\]\[(.+)\]\]', thread.content) 
+        link = re.match(r'\[\[(.+)\]\[(.+)\]\]', thread.content, flags=re.DOTALL) 
         if link:
-            encoded = self.links[link.group(1)]
-            if not encoded:
+            if not link.group(1) in self.links:
                 self.links[link.group(1)] = f"TASKID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
-            thread.content = re.sub(r'\[\[(.+)\]\[(.+)\]\]', f"[[{self.links[link.group(1)]}][{link.group(2)}]]", thread.content).strip()
+            thread.content = re.sub(r'\[\[(.+)\]\[(.+)\]\]', f"[[{self.links[link.group(1)]}][{link.group(2)}]]", thread.content, flags=re.DOTALL).strip()
             return
 
         link = re.match(r'\[\[(.+)\]\]', thread.content) 
         if link:
-            encoded = self.links[link.group(1)]
-            if not encoded:
+            if not link.group(1) in self.links:
                 self.links[link.group(1)] = f"TASKID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
-            thread.content = re.sub(r'\[\[(.+)\]\]', self.links[link.group(1)], thread.content).strip()
+            thread.content = re.sub(r'\[\[(.+)\]\]', self.links[link.group(1)], thread.content, flags=re.DOTALL).strip()
 
     def _clean_content(self, org_thread: OrgThread):
         if org_thread.content:
