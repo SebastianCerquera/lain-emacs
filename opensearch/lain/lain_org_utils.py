@@ -55,10 +55,6 @@ class OrgFile(OrgFileComponent):
 
 class OrgTask(OrgTaskComponent):
 
-    @classmethod
-    def generate_identifier(cls, title: str):
-        return f"TASKID{''.join(random.choices(string.printable[:62], k=len(title)))}"
-
     def __init__(self, node: orgparse.node.OrgNode, parent: Optional['OrgTask'] = None, 
                  threads: List['OrgThreadComponent'] = None):
         self.org_node = node
@@ -66,8 +62,6 @@ class OrgTask(OrgTaskComponent):
         self.parent = parent
         self.children = []
         self.threads = threads if threads else []
-
-        self.id = self.generate_identifier(self.title)
 
     def add_child(self, child: 'OrgTask'):
         child.parent = self
@@ -101,8 +95,6 @@ class OrgThread(OrgThreadComponent):
         self.content = content
 
         self.task = task
-
-
 
     def add_child(self, child: 'OrgThread'):
         child.parent = self
@@ -414,17 +406,41 @@ class OrgParserVisitor(OrgVisitor):
 class CleaningVisitor(OrgVisitor):
     TIMESTAMP_REGEX = r'- <(\d{4}-\d{2}-\d{2})[\w\s]*>'
 
+    links = {}
+
     def visit_org_file(self, org_file: OrgFile):
         pass
 
     def visit_org_task(self, org_task: OrgTask):
-        org_task.title = org_task.org_node.heading
+        org_task.title = org_task.org_node.heading 
+        org_task.id = f"TASKID{''.join(random.choices(string.printable[:62], k=len(org_task.title)))}"
+        self.links[org_task.title] = org_task.id
 
     def visit_org_thread(self, org_thread: OrgThread):
         self._extract_and_set_timestamp(org_thread)
         self._clean_content(org_thread)
         if not org_thread.timestamp:
             self._set_lowest_timestamp(org_thread)
+        self._check_org_links(org_thread)
+
+    def _check_org_links(self, thread: OrgThread):
+        if thread.content is None:
+            return
+        
+        link = re.match(r'\[\[(.+)\]\[(.+)\]\]', thread.content) 
+        if link:
+            encoded = self.links[link.group(1)]
+            if not encoded:
+                self.links[link.group(1)] = f"TASKID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
+            thread.content = re.sub(r'\[\[(.+)\]\[(.+)\]\]', f"[[{self.links[link.group(1)]}][{link.group(2)}]]", thread.content).strip()
+            return
+
+        link = re.match(r'\[\[(.+)\]\]', thread.content) 
+        if link:
+            encoded = self.links[link.group(1)]
+            if not encoded:
+                self.links[link.group(1)] = f"TASKID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
+            thread.content = re.sub(r'\[\[(.+)\]\]', self.links[link.group(1)], thread.content).strip()
 
     def _clean_content(self, org_thread: OrgThread):
         if org_thread.content:
