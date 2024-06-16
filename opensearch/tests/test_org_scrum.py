@@ -16,9 +16,9 @@ class LainSyntaxTest(unittest.TestCase):
         org_tree = load('tests/sample.org')
 
         #when, then: 
-        self.assertTrue(org_tree.children[0].body is not None)
+        self.assertTrue(org_tree.children[0].get_body(format="raw") is not None)
         self.assertTrue("<2024-05-18>" in org_tree.children[0].body)
-        self.assertEqual(org_tree.children[0].body, """  :LOGBOOK:
+        self.assertEqual(org_tree.children[0].get_body(format="raw"), """  :LOGBOOK:
   :END:
   - <2024-05-18> My test title
     - <2024-05-19> My test title 3""")
@@ -30,4 +30,12 @@ class LainSyntaxTest(unittest.TestCase):
         #when, then: 
         self.assertEqual(org_tree.children[0].children[0].heading, "TITLE 2")
         self.assertTrue("<2024-05-18>" in org_tree.children[0].children[0].body)
-        self.assertEqual(org_tree.children[0].children[0].body, "   - <2024-05-18> My test title 2")
+        self.assertEqual(org_tree.children[0].children[0].get_body(format="raw"), "   - <2024-05-18> My test title 2")
+
+    def test_lain_org_links_are_properly_parsed(self):
+        #given:
+        org_tree = load('tests/sample.org')
+
+        #when, then: 
+        self.assertEqual(org_tree.children[0].children[5].heading, "TITLE 7")
+        self.assertEqual(org_tree.children[0].children[5].get_body(format="raw"), "   - [[MYLINK][No timestamp]]")

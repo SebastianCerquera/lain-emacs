@@ -261,7 +261,7 @@ class OrgDatabase(OrgVisitor):
         pass
 
     def visit_org_thread(self, thread: OrgThread):
-        if "\end{verbatim}" in thread.content:
+        if "\end{verbatim" in thread.content:
             return
 
         try:
@@ -409,6 +409,8 @@ class OrgParserVisitor(OrgVisitor):
 
 # Visitor Implementations
 class CleaningVisitor(OrgVisitor):
+    HTTP_REGEX = r".*(https?://[^\s]+)"
+
     TIMESTAMP_REGEX = r'- <(\d{4}-\d{2}-\d{2})[\w\s]*>'
 
     links = {}
@@ -423,10 +425,21 @@ class CleaningVisitor(OrgVisitor):
 
     def visit_org_thread(self, org_thread: OrgThread):
         self._extract_and_set_timestamp(org_thread)
-        self._clean_content(org_thread)
         if not org_thread.timestamp:
             self._set_lowest_timestamp(org_thread)
+        self._clean_content(org_thread)
         self._check_org_links(org_thread)
+        self._check_html_links(org_thread)
+        self._clean_indentation(org_thread)
+
+    def _check_html_links(self, thread: OrgThread):
+        if thread.content is None:
+            return
+        
+        link = re.match(self.HTTP_REGEX, thread.content, flags=re.DOTALL)
+        if link:
+            self.links[link.group(1)] = f"HTTPID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
+            thread.content = thread.content.replace(link.group(1), self.links[link.group(1)])
 
     def _check_org_links(self, thread: OrgThread):
         if thread.content is None:
@@ -448,12 +461,17 @@ class CleaningVisitor(OrgVisitor):
     def _clean_content(self, org_thread: OrgThread):
         if org_thread.content:
             return
-
+        
         if re.match(self.TIMESTAMP_REGEX, org_thread.raw):
             org_thread.content = re.sub(self.TIMESTAMP_REGEX, '', org_thread.raw).strip()
         else:
             org_thread.content = re.sub(r'^-', '', org_thread.raw).strip()
 
+    def _clean_indentation(self, org_thread: OrgThread):
+        if not org_thread.content:
+            return
+
+        org_thread.content = " ".join(map(lambda e: e.strip(), org_thread.content.split("\n")))
 
     def _extract_and_set_timestamp(self, org_thread: OrgThread):
         match = re.search(self.TIMESTAMP_REGEX, org_thread.raw)
