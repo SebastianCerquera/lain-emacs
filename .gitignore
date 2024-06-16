@@ -8,3 +8,4 @@ opensearch/org/*
 opensearch/__pycache__/
 sample_files/
 .env
+opensearch/.vscode/launch.json
