@@ -400,7 +400,7 @@ class OrgParserVisitor(OrgVisitor):
         if task.org_node.body == '' or re.match(r'[\s\t\n]*$', task.org_node.body):
             return
         
-        ThreadParser.parse_raw(task.org_node.body, task, is_root=True)
+        ThreadParser.parse_raw(task.org_node.get_body(format="raw"), task, is_root=True)
         
 
     def visit_org_thread(self, thread: OrgThread):
