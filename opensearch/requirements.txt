@@ -1,5 +1,4 @@
-orgparse==0.4.20231004
-pytest==8.2.0
-unitest==1.4.34
-opensearch-py==2.5.0
-jupyter==1.0.0
+orgparse
+opensearch-py
+jupyter
+python-dotenv

@@ -9,3 +9,6 @@ opensearch/__pycache__/
 sample_files/
 .env
 opensearch/.vscode/launch.json
+opensearch/.dependencies/*
+*__pycache__*
+opensearch/src/lain_emacs_opensearch.egg-info/*

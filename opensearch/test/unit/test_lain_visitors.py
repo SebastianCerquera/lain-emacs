@@ -4,7 +4,7 @@ import datetime
 from orgparse.node import OrgNode
 from unittest.mock import MagicMock
 
-from lain.lain_org_utils import OrgTask, OrgThread, CleaningVisitor
+from src.lain.lain_org_utils import OrgTask, OrgThread, CleaningVisitor
 
 
 class ThreadParserTest(unittest.TestCase): 

@@ -1,7 +1,14 @@
 {
-    "python.testing.pytestArgs": [
-        "tests"
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./test",
+        "-t",
+        ".",
+        "-p",
+        "test_*.py"
     ],
-    "python.testing.unittestEnabled": false,
-    "python.testing.pytestEnabled": true
+    "python.testing.pytestEnabled": false,
+    "python.testing.unittestEnabled": true,
+    "python.testing.cwd": "${workspaceFolder}"
 }

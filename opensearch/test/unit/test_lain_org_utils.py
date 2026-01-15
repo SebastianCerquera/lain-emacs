@@ -1,11 +1,11 @@
 import unittest
 import string
-from lain.lain_org_utils import OrgParser, OrgTask, OrgFile, OrgThread
+from src.lain.lain_org_utils import OrgParser, OrgTask, OrgFile, OrgThread
 
 class TestLainOrgUtilsParse(unittest.TestCase):
     def setUp(self):
         self.utils = OrgParser()
-        self.file_path = "tests/sample.org"
+        self.file_path = "test/unit/sample.org"
 
     def test_parse_creates_org_file(self):
         # given:

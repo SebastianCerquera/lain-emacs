@@ -6,14 +6,14 @@ class LainSyntaxTest(unittest.TestCase):
         
     def test_lain_org_files_tasks_have_headings(self):
         #given:
-        org_tree = load('tests/sample.org')
+        org_tree = load('test/unit/sample.org')
 
         #when, then: 
         self.assertEqual(org_tree.children[0].heading,"TITLE")
 
     def test_lain_org_files_tasks_have_thread(self):
         #given:
-        org_tree = load('tests/sample.org')
+        org_tree = load('test/unit/sample.org')
 
         #when, then: 
         self.assertTrue(org_tree.children[0].get_body(format="raw") is not None)
@@ -25,7 +25,7 @@ class LainSyntaxTest(unittest.TestCase):
 
     def test_lain_org_files_tasks_headings_have_subheadings(self):
         #given:
-        org_tree = load('tests/sample.org')
+        org_tree = load('test/unit/sample.org')
 
         #when, then: 
         self.assertEqual(org_tree.children[0].children[0].heading, "TITLE 2")
@@ -34,7 +34,7 @@ class LainSyntaxTest(unittest.TestCase):
 
     def test_lain_org_links_are_properly_parsed(self):
         #given:
-        org_tree = load('tests/sample.org')
+        org_tree = load('test/unit/sample.org')
 
         #when, then: 
         self.assertEqual(org_tree.children[0].children[5].heading, "TITLE 7")
