@@ -2,3 +2,4 @@ orgparse
 opensearch-py
 jupyter
 python-dotenv
+testcontainers-opensearch

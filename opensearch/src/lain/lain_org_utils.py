@@ -216,17 +216,10 @@ class OrgDatabase(OrgVisitor):
                 }
               }
             },
-            "thread_body": {
-              "type": "text",
-              "term_vector": "yes",
-              "analyzer" : "ma",
-              "fields": {
                 "keyword": {
                   "type": "keyword",
-                  "ignore_above": 256
-                }
-              }
-            }, 
+                  "ignore_above": 32766
+                }, 
             "task_id": {
               "type": "text",
               "fields": {
@@ -489,6 +482,20 @@ class CleaningVisitor(OrgVisitor):
             org_thread.timestamp = datetime.datetime.now().date()
 
 
+
+class OrgThreadContentCollector(OrgVisitor):
+    def __init__(self):
+        self.thread_contents = set()
+
+    def visit_org_file(self, org_file: OrgFileComponent):
+        pass
+
+    def visit_org_task(self, org_task: OrgTaskComponent):
+        pass
+
+    def visit_org_thread(self, org_thread: OrgThreadComponent):
+        if org_thread.content:
+            self.thread_contents.add(org_thread.content)
 
 class OrgParser:
 
