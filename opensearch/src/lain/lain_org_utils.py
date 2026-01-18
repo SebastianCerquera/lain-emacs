@@ -534,7 +534,7 @@ class OrgFileDiscovery:
         return [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.org')]
 
 class OrgModule:
-    def run(self):
-        files = OrgFileDiscovery.discover_files("sample_files")
+    def run(self, source_path: str):
+        files = OrgFileDiscovery.discover_files(source_path)
         for file_path in files:
             OrgParser.parse(file_path).accept(OrgDatabase())
