@@ -116,7 +116,7 @@ class TestOpenSearchClient(unittest.TestCase):
                 "bool": {
                     "must": [
                         {"term": {"task_id.keyword": random_task_id}},
-                        {"term": {"thread_body.keyword": random_thread_content}}
+                        {"match": {"thread_body": random_thread_content}}
                     ]
                 }
             }

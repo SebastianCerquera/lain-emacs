@@ -11,4 +11,5 @@ sample_files/
 opensearch/.vscode/launch.json
 opensearch/.dependencies/*
 *__pycache__*
-opensearch/src/lain_emacs_opensearch.egg-info/*
+opensearch/src/lain.egg-info/*
+
