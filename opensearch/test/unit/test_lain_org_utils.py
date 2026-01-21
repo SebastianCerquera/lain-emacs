@@ -2,7 +2,7 @@ import unittest
 import string
 import os
 import tempfile
-from src.lain.lain_org_utils import OrgParser, OrgTask, OrgFile, OrgThread, OrgFileDiscovery
+from lain.lain_org_utils import OrgParser, OrgTask, OrgFile, OrgThread, OrgFileDiscovery
 
 class TestLainOrgUtilsParse(unittest.TestCase):
     def setUp(self):

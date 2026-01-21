@@ -7,7 +7,7 @@ import string
 from opensearchpy import OpenSearch, ConnectionError
 from testcontainers.opensearch import OpenSearchContainer
 
-from src.lain.lain_org_utils import OrgModule, OrgDatabase, OrgThread, OrgFile, OrgParser, OrgThreadContentCollector, OrgFileDiscovery
+from lain.lain_org_utils import OrgModule, OrgDatabase, OrgThread, OrgFile, OrgParser, OrgThreadContentCollector, OrgFileDiscovery
 
 class TestOpenSearchIntegration(unittest.TestCase):
 

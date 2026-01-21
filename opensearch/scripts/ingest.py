@@ -1,5 +1,5 @@
 import argparse
-from src.lain.lain_org_utils import OrgModule
+from lain.lain_org_utils import OrgModule
 
 def main():
     parser = argparse.ArgumentParser(description="Ingest Org-mode files into OpenSearch.")

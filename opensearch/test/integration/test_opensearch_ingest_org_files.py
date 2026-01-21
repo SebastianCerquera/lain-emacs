@@ -5,7 +5,7 @@ import os
 from opensearchpy import OpenSearch
 from testcontainers.opensearch import OpenSearchContainer
 
-from src.lain.lain_org_utils import OrgFileDiscovery, OrgParser, OrgDatabase
+from lain.lain_org_utils import OrgFileDiscovery, OrgParser, OrgDatabase
 
 class TestOpenSearchOrgIngestion(unittest.TestCase):
 
