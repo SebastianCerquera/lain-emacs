@@ -1,3 +1,4 @@
+import logging
 import os
 import re
 import datetime
@@ -15,6 +16,8 @@ import orgparse
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 # Base Classes
 class OrgEntity(ABC):
@@ -239,6 +242,7 @@ class OrgDatabase(OrgVisitor):
 
     
     def __init__(self, index_name: str = 'my-org-index-2024-05-21--1'):
+        logger.debug("Initializing OrgDatabase with index_name: %s", index_name)
         endpoint = os.getenv("OPENSEARCH_ENDPOINT")
 
         self.index_name = index_name
@@ -254,14 +258,14 @@ class OrgDatabase(OrgVisitor):
         pass
 
     def visit_org_thread(self, thread: OrgThread):
+        logger.debug("Visiting org thread: %s", thread.to_json())
         if "\end{verbatim" in thread.content:
             return
 
         try:
             self.elasticsearch.index(index=self.index_name, body=thread.to_json())
         except Exception as e:
-            print("###### ERRROR ######")
-            print(thread.to_json())
+            logger.error("Failed to index thread: %s", thread.to_json(), exc_info=True)
 
 class ThreadParser():
 
@@ -535,6 +539,7 @@ class OrgFileDiscovery:
 
 class OrgModule:
     def run(self, source_path: str):
+        logger.debug("OrgModule.run called with source_path: %s", source_path)
         files = OrgFileDiscovery.discover_files(source_path)
         for file_path in files:
             OrgParser.parse(file_path).accept(OrgDatabase())
