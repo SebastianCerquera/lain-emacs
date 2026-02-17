@@ -1,3 +1,5 @@
+(require 'cl-lib)
+
 (ido-mode t)
 
 (global-set-key (kbd "C-x C-m") 'execute-extended-command)
@@ -31,19 +33,23 @@
 (require 'package)
 ; add MELPA to repository list
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("melpa" . "http://melpa.milkbox.net/packages/")))
+                         ("melpa" . "https://melpa.org/packages/")))
 
 (package-initialize)
 
-(add-to-list 'load-path "~/.emacs.d/htmlize/")
+;; Require all packages, assuming they are pre-installed
+(require 'dash)
 (require 'elnode)
+(require 'evil)
+(require 'json) ;; elnode dependency
+
+;; Local modules
+(add-to-list 'load-path "~/.emacs.d/htmlize/")
 (require 'htmlize)
 
 (add-to-list 'load-path "~/.emacs.d/lain/")
 (require 'lain)
 
-(add-to-list 'load-path "~/.emacs.d/evil")
-(require 'evil)
 (evil-mode 1)
 
 (defun high-bright-look-and-feel ()
