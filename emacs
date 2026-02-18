@@ -43,9 +43,6 @@
 (require 'evil)
 (require 'json) ;; elnode dependency
 
-;; Local modules
-(add-to-list 'load-path "~/.emacs.d/htmlize/")
-(require 'htmlize)
 
 (add-to-list 'load-path "~/.emacs.d/lain/")
 (require 'lain)

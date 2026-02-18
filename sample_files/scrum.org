@@ -1,0 +1,403 @@
+#    -*- mode: org -*-
+
+#+BEGIN: clocktable :maxlevel 10 :scope file :block today
+#+CAPTION: Clock summary at [2024-08-04 dom 17:27], for domingo, agosto 04, 2024.
+| Headline     | Time   |
+|--------------+--------|
+| *Total time* | *0:00* |
+#+END:
+
+#+TODO: TODO IN_PROGRESS CHECK | DONE
+#+TODO: NO_STATE LATER | CANCELED
+
+* TODO ipsum
+** TODO dolore
+*** TODO eiusmod, 2024-01, 4, dolore, RESPONSABILITIES
+    :LOGBOOK:
+    CLOCK: [2026-01-11 dom 15:44]--[2026-01-11 dom 23:25] =>  7:41
+    :END:
+** TODO adipiscing
+*** TODO sit, 2023-06, 5, adisciping, RESPONSABILITIES
+**** TODO [#A] labore, sit, 2023-06, 5, adisciping, RESPONSABILITIES
+     - <2026-01-09 vie> consectetur do dolor adipiscing tempor elit magna elit magna eiusmod lorem labore eiusmod tempor
+       do elit do do eiusmod incididunt do labore do adipiscing adipiscing dolor lorem dolor dolore
+*** TODO [#A] magna, 2023-06, 5, adipiscing, RESPONSABILITIES
+    :LOGBOOK:
+    CLOCK: [2026-01-09 vie 23:25]--[2026-01-09 vie 23:44] =>  0:19
+    :END:
+    - <2026-01-09 vie> eiusmod eiusmod eiusmod sit aliqua incididunt sed elit et incididunt magna aliqua eiusmod dolor magna et elit lorem tempor
+      - <2026-01-09 vie> labore ipsum consectetur amet elit ipsum incididunt amet amet adipiscing magna lorem dolore
+        aliqua magna tempor aliqua sit
+**** TODO dolor, magna, 2023-06, 5, adipiscing, RESPONSABILITIES
+     - <2026-01-07 mié> elit do lorem dolore tempor labore amet ipsum
+       - <2026-01-07 mié> aliqua eiusmod do tempor ut consectetur elit adipiscing sed aliqua tempor tempor magna sit aliqua aliqua adipiscing dolor ipsum
+         do eiusmod tempor ut et amet sit magna et labore amet incididunt eiusmod labore incididunt
+***** TODO [#A] ut, dolor, magna, 2023-06, 5, adipiscing, RESPONSABILITIES
+      :LOGBOOK:
+      CLOCK: [2026-01-09 vie 17:17]--[2026-01-09 vie 17:22] =>  0:05
+      CLOCK: [2026-01-09 vie 16:38]--[2026-01-09 vie 17:17] =>  0:39
+      :END:
+      - <2025-12-16 mar> dolore magna amet consectetur eiusmod et consectetur dolor consectetur ut labore dolor do labore sit
+        - <2026-01-09 vie> adipiscing eiusmod incididunt ut labore ipsum lorem magna incididunt magna tempor aliqua do consectetur do aliqua adipiscing do
+          sit sit ut do consectetur incididunt sed et ipsum tempor amet
+          do sit ipsum tempor sed sit incididunt amet
+          elit do ut sit amet aliqua dolore dolor ut elit tempor
+***** TODO amet, dolor, magna, 2023-06, 5, adipiscing, RESPONSABILITIES
+      - <2026-01-08 jue> eiusmod consectetur amet magna eiusmod do adipiscing elit
+        adipiscing sed labore magna sed ipsum adipiscing dolore incididunt do
+        - <2026-01-09 vie> ipsum adipiscing lorem adipiscing incididunt tempor lorem dolor eiusmod amet et
+          consectetur do consectetur ipsum labore labore ipsum ut incididunt dolore elit dolor
+          magna lorem et magna eiusmod et lorem consectetur adipiscing ipsum elit et consectetur et
+        incididunt aliqua incididunt dolore magna lorem sed
+***** TODO adipiscing, magna, 2023-06, 5, adipiscing, RESPONSABILITIES
+      - <2026-01-07 mié> do sed do aliqua lorem dolore eiusmod amet sed consectetur eiusmod eiusmod lorem lorem
+        sed incididunt sit eiusmod ut dolore
+        do lorem incididunt sit dolor incididunt sed eiusmod magna adipiscing
+        elit do et et incididunt
+        lorem labore adipiscing et aliqua ut eiusmod incididunt
+        - <2026-01-07 mié> lorem amet amet amet dolore eiusmod lorem sit do adipiscing et amet adipiscing incididunt amet dolore lorem eiusmod
+          magna tempor incididunt et magna lorem magna eiusmod incididunt
+        et amet dolore elit do
+          incididunt dolore et tempor consectetur
+          et eiusmod magna tempor ipsum elit do dolore lorem adipiscing
+          aliqua ipsum lorem elit ipsum sed elit
+            ut dolore ut incididunt aliqua et elit amet ut sit tempor
+            - <2026-01-07 mié> dolor incididunt lorem et eiusmod tempor sed incididunt dolore et dolor tempor consectetur ipsum consectetur
+              - <2026-01-07 mié> ipsum dolore ipsum lorem ipsum elit amet dolore sed incididunt sit
+                ipsum sed consectetur amet ut sit dolore adipiscing magna et dolor et elit sit amet
+                incididunt sed sed et amet adipiscing dolore aliqua magna
+                labore eiusmod tempor sit dolore sit amet magna dolore eiusmod consectetur incididunt incididunt ut
+                labore elit ut sed dolor
+              elit ipsum sit eiusmod aliqua consectetur incididunt magna adipiscing et
+                ut do lorem amet incididunt adipiscing amet incididunt et dolore lorem magna
+                  magna elit elit sit amet dolor sit adipiscing sed sed incididunt sed et lorem ut
+              magna amet sed adipiscing dolor magna adipiscing tempor lorem
+                tempor sed eiusmod sed consectetur
+                elit incididunt dolor amet elit aliqua tempor dolore dolor et lorem sit
+                  amet consectetur ut consectetur sed eiusmod dolore incididunt labore amet sed consectetur sit tempor
+            ut dolor elit dolor eiusmod ipsum ipsum
+              elit elit eiusmod elit tempor eiusmod magna dolore aliqua do do amet
+              labore sit magna sit tempor ipsum magna tempor sit tempor magna elit
+              - <2026-01-07 mié> tempor labore do labore do ut consectetur sed sit tempor dolore et labore
+**** TODO et, magna, 2023-06, 5, adipiscing, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-07 mié 19:53]--[2026-01-07 mié 20:31] =>  0:38
+     :END:
+     - <2026-01-07 mié> aliqua eiusmod et consectetur dolore elit et incididunt adipiscing aliqua ut amet ut lorem labore consectetur do ipsum amet
+       magna dolore magna et ipsum amet do lorem ipsum incididunt eiusmod elit sit dolor amet
+       eiusmod amet ut adipiscing ipsum magna consectetur eiusmod et do lorem ipsum
+       consectetur ipsum magna labore consectetur incididunt consectetur do
+       magna aliqua sed sit sed sit ut amet adipiscing sed dolor dolore sed do do
+       sed dolore amet tempor ut dolor consectetur
+         dolor incididunt eiusmod consectetur elit ipsum incididunt incididunt ipsum aliqua
+         ipsum dolore sed elit eiusmod
+         amet adipiscing sed do elit adipiscing magna ut adipiscing lorem sit magna consectetur eiusmod tempor
+           adipiscing tempor et tempor eiusmod eiusmod ipsum dolor ut et ut
+     - <2026-01-07 mié> dolor ut tempor sit amet ut consectetur sit et tempor dolore magna incididunt
+       adipiscing labore adipiscing elit amet incididunt lorem
+       adipiscing sed magna labore labore consectetur
+       - <2026-01-09 vie> do eiusmod labore et consectetur dolore tempor tempor adipiscing elit et dolore magna magna ut
+         aliqua dolor magna adipiscing ut sit incididunt magna adipiscing dolore tempor et do
+*** TODO sit, 2021-01, 3, adipiscing, RESPONSABILITIES
+**** TODO ut, sit, 2021-01, 3, adipiscing, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-09 vie 23:44]--[2026-01-09 vie 23:55] =>  0:11
+     :END:
+** TODO lorem
+*** TODO adipiscing, 2024-01, 1, lorem, RESPONSABILITIES
+**** TODO do, adipiscing, 2024-01, 1, lorem, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-09 vie 14:32]--[2026-01-09 vie 14:44] =>  0:12
+     CLOCK: [2026-01-09 vie 14:00]--[2026-01-09 vie 14:32] =>  0:32
+     :END:
+     - <2026-01-09 vie> incididunt ipsum ipsum eiusmod amet et magna dolore magna sit eiusmod magna dolore et magna consectetur dolore adipiscing
+       amet aliqua adipiscing ipsum consectetur ipsum consectetur magna do et consectetur consectetur incididunt consectetur
+       dolor dolor elit ipsum sit amet adipiscing ut sit consectetur dolore sed
+         eiusmod eiusmod elit ut dolore adipiscing aliqua do sit
+         - <2026-01-09 vie> ipsum sed dolore ut ipsum aliqua do elit elit lorem sit amet lorem aliqua aliqua do elit sed amet eiusmod
+           - <2026-01-09 vie> amet ipsum consectetur dolore ipsum adipiscing amet adipiscing elit dolor ut magna do sed dolor ipsum amet
+             sit dolor elit sit aliqua magna tempor incididunt consectetur consectetur labore
+             et magna aliqua labore eiusmod tempor dolore tempor
+     - <2026-01-08 jue> dolore ut labore tempor ipsum lorem magna elit elit sit dolor consectetur magna dolor sit sed incididunt adipiscing sit et
+       sit sit tempor eiusmod magna labore tempor do aliqua incididunt elit ut do aliqua
+       adipiscing sit sed sit labore sit sed amet dolor aliqua dolor ut do aliqua ipsum
+***** TODO aliqua, do, adipiscing, 2024-01, 1, lorem, RESPONSABILITIES
+      :LOGBOOK:
+      CLOCK: [2026-01-08 jue 16:30]--[2026-01-08 jue 18:10] =>  1:40
+      CLOCK: [2026-01-08 jue 13:13]--[2026-01-08 jue 13:28] =>  0:15
+      CLOCK: [2026-01-08 jue 08:59]--[2026-01-08 jue 09:21] =>  0:22
+      CLOCK: [2026-01-07 mié 23:26]--[2026-01-08 jue 00:26] =>  1:00
+      :END:
+      - <2026-01-08 jue> et sit ipsum labore sit sed incididunt do lorem lorem amet ipsum ipsum incididunt sed tempor dolore dolore eiusmod dolor
+        dolor labore amet dolore sed
+      - <2026-01-08 jue> do amet dolore amet ut tempor sed eiusmod magna ipsum lorem dolor adipiscing
+        labore sed aliqua incididunt sed sed tempor amet
+      - <2026-01-08 jue> eiusmod adipiscing do lorem incididunt ipsum dolor aliqua tempor lorem ut sit incididunt dolore do elit
+        consectetur magna ipsum dolor dolor amet labore
+      - <2026-01-08 jue> adipiscing do eiusmod incididunt ut adipiscing sit ipsum ipsum magna
+        magna et labore elit dolor elit do aliqua labore tempor
+        dolor sit labore incididunt sed labore ut elit ut sed amet incididunt sed dolor elit
+        labore elit sit do do magna eiusmod consectetur adipiscing sed
+      - <2026-01-08 jue> consectetur incididunt do elit consectetur tempor incididunt aliqua aliqua dolore incididunt lorem do labore aliqua
+        incididunt magna do consectetur magna magna dolor amet
+        - <2026-01-08 jue> do sit dolore magna sed adipiscing ipsum incididunt ipsum eiusmod elit elit dolor dolore
+          tempor et sit sit consectetur dolore amet sed adipiscing consectetur amet adipiscing tempor sit
+        - <2026-01-08 jue> dolore ipsum do et sit aliqua sit ipsum lorem dolor dolor labore lorem adipiscing dolore lorem consectetur incididunt eiusmod amet
+      - <2026-01-07 mié> dolor ut tempor eiusmod magna ipsum ut do sed sed amet ut elit sit labore amet labore labore consectetur
+        consectetur tempor labore labore dolore elit et adipiscing sed labore do et ipsum
+        - <2026-01-08 jue> eiusmod aliqua adipiscing labore adipiscing dolor aliqua aliqua dolore dolor tempor eiusmod dolore lorem sit
+          aliqua lorem eiusmod dolore dolore ipsum tempor ut incididunt elit incididunt sed et ut incididunt
+            dolor adipiscing amet sit adipiscing adipiscing
+              adipiscing sed amet amet adipiscing eiusmod adipiscing
+              incididunt dolore adipiscing dolore aliqua magna incididunt
+                eiusmod aliqua sed incididunt ut adipiscing ut dolore adipiscing do eiusmod do aliqua
+        - <2026-01-08 jue> incididunt lorem aliqua ipsum tempor dolor ipsum consectetur sit dolore
+          - <2026-01-08 jue> incididunt magna et do sit dolor ipsum et dolor sed sit aliqua eiusmod tempor et labore consectetur incididunt
+            eiusmod elit do tempor labore dolore consectetur ut
+          incididunt sit dolor ut adipiscing labore
+            tempor dolore ut consectetur sit dolore do labore magna
+****** TODO labore, aliqua, do, adipiscing, 2024-01, 1, lorem, RESPONSABILITIES
+       :LOGBOOK:
+       CLOCK: [2026-01-09 vie 20:34]--[2026-01-09 vie 21:38] =>  1:04
+       CLOCK: [2026-01-09 vie 17:22]--[2026-01-09 vie 17:45] =>  0:23
+       CLOCK: [2026-01-09 vie 14:44]--[2026-01-09 vie 16:38] =>  1:54
+       CLOCK: [2026-01-09 vie 13:00]--[2026-01-09 vie 13:09] =>  0:09
+       CLOCK: [2026-01-09 vie 12:07]--[2026-01-09 vie 12:48] =>  0:41
+       CLOCK: [2026-01-08 jue 23:27]--[2026-01-08 jue 23:45] =>  0:18
+       CLOCK: [2026-01-08 jue 21:14]--[2026-01-08 jue 22:27] =>  1:13
+       CLOCK: [2026-01-08 jue 18:10]--[2026-01-08 jue 19:40] =>  1:30
+       :END:
+       - <2026-01-12 lun> ut ut et aliqua eiusmod elit sed dolor eiusmod lorem lorem
+         tempor eiusmod consectetur ut do aliqua ipsum ut ipsum incididunt tempor do magna
+         aliqua ut dolore labore do
+         amet do sed labore dolor
+       - <2026-01-08 jue> eiusmod consectetur elit ut dolore amet elit sit sed eiusmod magna
+       - <2026-01-08 jue> dolore dolor incididunt ipsum et magna lorem amet amet tempor ipsum dolor
+         elit consectetur incididunt lorem sed incididunt
+         do sed consectetur sed sit ut eiusmod do et
+       - <2026-01-09 vie> labore sed sit magna eiusmod adipiscing dolor do do do consectetur sit ut dolore
+         eiusmod sit elit do sed sit
+*** TODO ut, 2020-05, 5, lorem, RESPONSABILITIES
+    :LOGBOOK:
+    CLOCK: [2026-01-11 dom 13:07]--[2026-01-11 dom 13:24] =>  0:17
+    CLOCK: [2026-01-09 vie 13:09]--[2026-01-09 vie 13:28] =>  0:19
+    CLOCK: [2026-01-09 vie 11:35]--[2026-01-09 vie 11:45] =>  0:10
+    CLOCK: [2026-01-09 vie 11:27]--[2026-01-09 vie 11:34] =>  0:07
+    CLOCK: [2026-01-08 jue 22:42]--[2026-01-08 jue 23:01] =>  0:19
+    CLOCK: [2026-01-08 jue 13:28]--[2026-01-08 jue 13:45] =>  0:17
+    CLOCK: [2026-01-08 jue 12:58]--[2026-01-08 jue 13:13] =>  0:15
+    CLOCK: [2026-01-07 mié 22:46]--[2026-01-07 mié 23:06] =>  0:20
+    CLOCK: [2026-01-07 mié 22:38]--[2026-01-07 mié 22:46] =>  0:08
+    CLOCK: [2026-01-07 mié 14:09]--[2026-01-07 mié 14:43] =>  0:34
+    CLOCK: [2026-01-07 mié 13:05]--[2026-01-07 mié 13:34] =>  0:29
+    :END:
+    - <2026-01-08 jue> sit sed adipiscing magna eiusmod incididunt lorem labore dolor amet ipsum tempor dolore aliqua elit
+      amet elit sed lorem do et amet eiusmod dolor
+    - <2026-01-07 mié> aliqua consectetur sit sed aliqua ut sed sed labore labore amet ipsum lorem ipsum dolore eiusmod ut
+      - <2026-01-07 mié> labore tempor ut ipsum ut adipiscing consectetur labore incididunt labore ipsum
+        elit elit eiusmod dolore sed do consectetur adipiscing elit labore eiusmod amet tempor magna aliqua
+*** TODO adipiscing, 2022-12, 4, lorem, RESPONSABILITIES
+**** TODO [#A] consectetur, adipiscing, 2022-12, 4, lorem, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-08 jue 22:27]--[2026-01-08 jue 22:42] =>  0:15
+     CLOCK: [2026-01-07 mié 23:06]--[2026-01-07 mié 23:26] =>  0:20
+     CLOCK: [2026-01-07 mié 21:13]--[2026-01-07 mié 21:18] =>  0:05
+     CLOCK: [2026-01-07 mié 20:31]--[2026-01-07 mié 20:37] =>  0:06
+     CLOCK: [2026-01-07 mié 17:50]--[2026-01-07 mié 19:53] =>  2:03
+     :END:
+     - <2026-01-14 mié> consectetur adipiscing eiusmod sit sed dolore et sed
+       amet sed adipiscing et dolor labore consectetur dolor aliqua
+     - <2026-01-09 vie> sit do labore tempor et elit adipiscing dolore labore et eiusmod ut et et sit dolor labore magna eiusmod incididunt
+     - <2026-01-07 mié> adipiscing amet adipiscing do eiusmod ut do do magna adipiscing tempor ut dolore aliqua lorem dolor et eiusmod consectetur lorem
+       - <2026-01-08 jue> et dolore ut dolore amet magna sed dolore tempor do ipsum magna ut ipsum do et
+         aliqua lorem ipsum labore ipsum sed elit eiusmod do eiusmod
+         - <2026-01-09 vie> aliqua eiusmod et adipiscing magna amet aliqua sit elit amet aliqua magna amet amet sed eiusmod magna
+           amet tempor dolor ipsum magna eiusmod consectetur dolor elit elit
+           - <2026-01-09 vie> dolore elit dolor do ipsum tempor elit sit consectetur consectetur do magna lorem ut magna eiusmod amet
+             sed dolor eiusmod eiusmod dolor et amet magna magna amet lorem labore consectetur
+           lorem amet dolor adipiscing sed labore lorem magna do adipiscing
+             - <2026-01-09 vie> sit do sed incididunt incididunt ut lorem elit elit labore dolore
+               dolore sed incididunt lorem tempor aliqua labore labore consectetur incididunt amet aliqua ut et
+               adipiscing consectetur aliqua incididunt amet labore labore elit magna elit ipsum labore
+             lorem adipiscing labore tempor labore amet lorem magna ipsum sed ipsum aliqua incididunt consectetur
+               - <2026-01-09 vie> ut amet aliqua dolore adipiscing sed lorem tempor adipiscing ut amet elit amet
+                 aliqua elit dolor ipsum consectetur do et ipsum
+                 - <2026-01-09 vie> dolor do amet eiusmod elit ipsum dolore ut aliqua sit magna tempor sit
+                   magna do eiusmod elit consectetur ut labore tempor
+         - <2026-01-09 vie> incididunt labore adipiscing et dolore tempor dolor do aliqua magna ipsum et sit aliqua lorem consectetur consectetur dolore elit et
+           ut consectetur do lorem sit dolore do elit
+           labore elit sit consectetur ipsum elit lorem amet consectetur
+         ipsum incididunt dolor elit do sit aliqua et lorem eiusmod et
+           - <2026-01-08 jue> dolor sed amet et elit incididunt dolore dolor et incididunt labore
+             adipiscing eiusmod lorem sit ut magna amet amet eiusmod amet
+             magna adipiscing tempor amet eiusmod adipiscing sed
+             - <2026-01-08 jue> labore amet elit amet amet lorem dolore consectetur et
+               lorem dolor lorem do ut magna eiusmod aliqua amet tempor dolore eiusmod adipiscing adipiscing
+               amet elit et aliqua eiusmod incididunt sit labore
+           elit dolor consectetur adipiscing lorem aliqua sit incididunt aliqua eiusmod ipsum
+             amet lorem aliqua ut dolor amet magna incididunt sit amet aliqua dolor sit
+             sed adipiscing adipiscing sit sit labore ipsum dolor do
+             adipiscing sit do elit adipiscing dolore
+     - <2026-01-07 mié> tempor ipsum sit dolore dolor lorem et ipsum lorem eiusmod eiusmod amet adipiscing
+       - <2025-12-28 dom> elit eiusmod ipsum et dolor sed magna elit adipiscing ut et
+         - <2025-12-28 dom> dolor do elit eiusmod labore ipsum lorem sed eiusmod eiusmod lorem do magna dolor labore
+           ut consectetur amet sed labore sit dolore amet sit dolore consectetur do magna labore sed
+           - <2026-01-07 mié> elit elit dolore magna dolore elit dolor adipiscing
+             do elit sed ut eiusmod ut adipiscing labore ipsum
+           sed ut sed incididunt sit dolore adipiscing
+             - <2026-01-07 mié> eiusmod magna tempor sit magna et amet lorem amet incididunt dolore dolor ut adipiscing tempor eiusmod amet lorem et incididunt
+               incididunt ipsum ipsum sed consectetur et magna consectetur
+               - <2026-01-07 mié> do consectetur et aliqua consectetur et sit amet
+                 dolor sed incididunt dolor sed labore
+               eiusmod aliqua dolor tempor consectetur ipsum eiusmod sit eiusmod incididunt et sit adipiscing incididunt
+                 do aliqua dolore et ut ipsum
+                   - <2026-01-07 mié> consectetur dolore ipsum sit adipiscing consectetur do ut incididunt adipiscing incididunt et sed ut
+                     incididunt dolore aliqua sit magna tempor adipiscing aliqua tempor adipiscing sit tempor amet dolor do
+                     aliqua magna sit aliqua aliqua sed labore dolor dolor consectetur
+                     adipiscing dolore tempor sit amet
+                     - <2026-01-07 mié> elit magna adipiscing magna aliqua elit dolor tempor incididunt incididunt et et do consectetur eiusmod elit consectetur labore amet ipsum
+                       aliqua elit ut labore tempor ut
+                       aliqua eiusmod dolor sit consectetur ipsum incididunt
+           - <2025-12-28 dom> aliqua labore sed elit adipiscing ut magna adipiscing ipsum consectetur tempor labore
+             amet amet incididunt adipiscing ut labore adipiscing dolor sit magna sed elit
+             ut amet incididunt do consectetur
+             - <2026-01-07 mié> sit magna ipsum eiusmod et adipiscing incididunt ut dolore ut
+               ut eiusmod lorem sed eiusmod et elit
+               elit incididunt et eiusmod consectetur labore dolore do
+               elit tempor consectetur ut do aliqua dolore do amet
+               elit labore amet consectetur magna incididunt labore incididunt ipsum amet lorem aliqua eiusmod et sit
+             - <2026-01-07 mié> sed magna dolor sit sit et labore magna dolor ipsum dolore magna ipsum lorem incididunt dolor magna tempor dolor eiusmod
+               aliqua sed sit consectetur amet et amet adipiscing sed do incididunt do elit magna
+               adipiscing aliqua sed labore ut lorem adipiscing dolore sit consectetur elit
+     - <2026-01-07 mié> lorem sit eiusmod adipiscing eiusmod tempor sit adipiscing eiusmod
+       - <2026-01-07 mié> amet adipiscing dolore incididunt aliqua eiusmod ut et dolore aliqua sit et sit consectetur incididunt
+*** DONE ut, 2023-08, 1, lorem, RESPONSABILITIES
+    CLOSED: [2026-01-12 lun 15:29]
+    :PROPERTIES:
+    sit labore adipiscing dolore elit tempor consectetur do
+    :END:
+    et sit consectetur magna labore aliqua adipiscing elit labore ut amet dolore lorem lorem magna
+    adipiscing incididunt dolore dolor consectetur elit dolore ipsum labore ipsum eiusmod et incididunt adipiscing labore
+    sit et ut consectetur dolor magna adipiscing
+    magna tempor do ipsum eiusmod elit amet dolor et sed magna et aliqua do
+    consectetur lorem et consectetur eiusmod aliqua aliqua adipiscing sed lorem eiusmod amet do
+    :LOGBOOK:
+    CLOCK: [2026-01-11 dom 13:34]--[2026-01-11 dom 15:44] =>  2:10
+    CLOCK: [2026-01-10 sáb 10:53]--[2026-01-10 sáb 11:21] =>  0:28
+    CLOCK: [2026-01-09 vie 23:55]--[2026-01-10 sáb 00:05] =>  0:10
+    CLOCK: [2026-01-09 vie 22:28]--[2026-01-09 vie 23:25] =>  0:57
+    CLOCK: [2026-01-09 vie 14:13]--[2026-01-09 vie 14:13] =>  0:00
+    CLOCK: [2026-01-09 vie 13:28]--[2026-01-09 vie 13:57] =>  0:29
+    CLOCK: [2026-01-09 vie 06:24]--[2026-01-09 vie 06:54] =>  0:30
+    CLOCK: [2026-01-08 jue 23:01]--[2026-01-08 jue 23:27] =>  0:26
+    CLOCK: [2026-01-08 jue 13:45]--[2026-01-08 jue 13:55] =>  0:10
+    CLOCK: [2026-01-08 jue 07:00]--[2026-01-08 jue 07:49] =>  0:49
+    CLOCK: [2026-01-07 mié 20:37]--[2026-01-07 mié 20:43] =>  0:06
+    CLOCK: [2026-01-07 mié 17:09]--[2026-01-07 mié 17:14] =>  0:05
+    CLOCK: [2026-01-07 mié 14:44]--[2026-01-07 mié 15:13] =>  0:29
+    :END:
+*** TODO aliqua, 2021-07, 3, lorem, RESPONSABILITIES
+**** TODO consectetur, aliqua, 2021-07, 3, lorem, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-09 vie 19:56]--[2026-01-09 vie 20:34] =>  0:38
+     CLOCK: [2026-01-07 mié 20:43]--[2026-01-07 mié 21:13] =>  0:30
+     :END:
+     - <2025-12-23 mar> amet eiusmod sed sit incididunt adipiscing incididunt elit labore dolor incididunt do aliqua amet ut
+       - <2026-01-09 vie> tempor et ipsum et magna dolor sit magna consectetur lorem sit eiusmod tempor elit sit magna eiusmod et labore tempor
+       - <2026-01-09 vie> et ut lorem do adipiscing eiusmod elit amet sit amet lorem lorem
+     - <2025-12-23 mar> dolore sit adipiscing labore sed ut eiusmod sit eiusmod elit amet sit adipiscing dolore et
+       - <2026-01-09 vie> dolore magna do elit elit lorem sed eiusmod tempor elit sit consectetur magna ut dolore tempor
+       - <2026-01-09 vie> et dolor aliqua ut magna labore aliqua sed incididunt et
+       - <2026-01-09 vie> lorem tempor elit dolor aliqua amet ipsum eiusmod sit consectetur sit dolor labore amet labore incididunt tempor
+       - <2026-01-07 mié> sit eiusmod do et adipiscing et ut et lorem sed sit tempor
+     - <2026-01-07 mié> incididunt eiusmod incididunt dolore adipiscing sit lorem lorem do dolore elit lorem dolor elit aliqua consectetur
+       - <2026-01-07> sit elit et elit lorem tempor labore incididunt sit incididunt dolor
+         - <2026-01-09 vie> labore incididunt ut magna consectetur labore amet sed aliqua sit consectetur elit
+         dolore et sit magna sit
+       - <2026-01-07> consectetur magna magna amet ut et adipiscing adipiscing do sit elit incididunt et tempor labore do
+         ut lorem lorem sed lorem ut sit ut et et
+       - <2026-01-07> magna amet tempor tempor magna tempor dolor ipsum dolor ut aliqua sit sit aliqua dolor
+         sed sit sit consectetur tempor adipiscing consectetur labore
+       - <2026-01-07> eiusmod aliqua lorem magna aliqua labore ipsum dolor sit sit
+         sit adipiscing ipsum dolore magna eiusmod incididunt adipiscing incididunt et ut
+**** TODO incididunt, aliqua, 2021-07, 3, lorem, RESPONSABILITIES
+***** TODO [#A] magna, incididunt, aliqua, 2021-07, 3, lorem, RESPONSABILITIES
+      :LOGBOOK:
+      CLOCK: [2026-01-09 vie 17:45]--[2026-01-09 vie 19:56] =>  2:11
+      :END:
+      - <2026-01-09 vie> dolor magna eiusmod eiusmod incididunt labore labore do eiusmod ut tempor amet sed
+        consectetur magna amet aliqua adipiscing amet do lorem sed do magna sit sit et
+        consectetur incididunt tempor sed elit dolor ut elit
+        - <2026-01-09 vie> ipsum eiusmod et incididunt amet sed do adipiscing ipsum sed
+          ut tempor aliqua aliqua ipsum
+          magna eiusmod adipiscing sed eiusmod magna sit et elit consectetur
+            elit dolore do incididunt do adipiscing ut dolor elit dolore aliqua sit consectetur
+            aliqua adipiscing ipsum magna tempor tempor tempor tempor aliqua
+      - <2026-01-09 vie> sed dolor consectetur elit adipiscing ut ut ut sed eiusmod aliqua incididunt incididunt ipsum consectetur elit dolore ipsum dolore labore
+        et ut do adipiscing do lorem ipsum lorem incididunt dolor eiusmod
+        dolore et ipsum incididunt tempor labore labore
+          dolor do consectetur et amet incididunt dolor magna
+            lorem incididunt dolor consectetur eiusmod tempor magna sed sit et ut sed dolor
+          consectetur incididunt tempor tempor adipiscing et tempor labore sit tempor sit
+            elit dolore incididunt elit sit eiusmod ut dolor dolore amet
+            consectetur sit amet adipiscing adipiscing aliqua dolor lorem ut incididunt lorem amet magna aliqua
+      - <2026-01-09 vie> ut dolor amet sit eiusmod lorem labore incididunt dolor tempor elit sit
+        amet ipsum sit ipsum incididunt amet eiusmod do ipsum lorem dolore tempor elit
+*** TODO eiusmod, 2024-05, 1, lorem, RESPONSABILITIES
+**** TODO et, eiusmod, 2024-05, 1, lorem, RESPONSABILITIES
+      :LOGBOOK:
+      CLOCK: [2026-01-09 vie 08:07]--[2026-01-09 vie 11:27] =>  3:20
+      :END:
+**** TODO [#A] dolore, eiusmod, 2024-05, 1, lorem, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-07 mié 17:39]--[2026-01-07 mié 17:50] =>  0:11
+     CLOCK: [2026-01-07 mié 15:13]--[2026-01-07 mié 17:09] =>  1:56
+     :END:
+     - <2026-01-07 mié> magna ipsum et elit tempor dolor dolor sit lorem sed do ut consectetur amet amet et
+       - <2026-01-07 mié> eiusmod magna magna dolore incididunt amet magna lorem labore eiusmod incididunt ut
+     - <2026-01-07 mié> dolore eiusmod labore sed dolor eiusmod sed sit do dolore amet eiusmod amet ipsum ut incididunt dolore consectetur aliqua lorem
+       dolore tempor elit ipsum dolor elit amet labore sed amet sed amet aliqua
+       ipsum dolor do dolore labore adipiscing
+       - <2026-01-07 mié> eiusmod labore incididunt tempor ut labore incididunt dolor et eiusmod do lorem
+         sit elit ipsum dolore labore elit sit tempor
+*** TODO [#A] dolore, 2025-04, 1, lorem, RESPONSABILITIES
+    :LOGBOOK:
+    CLOCK: [2026-01-07 mié 13:34]--[2026-01-07 mié 14:09] =>  0:35
+    :END:
+    - <2025-12-16 mar> dolore labore adipiscing dolore sit adipiscing lorem do et adipiscing incididunt
+      - <2026-01-07 mié> ut adipiscing labore do tempor lorem dolor amet dolore sed lorem incididunt consectetur consectetur
+        dolor dolor tempor consectetur dolore magna do incididunt labore et magna tempor lorem
+        tempor dolore magna consectetur labore eiusmod lorem ipsum
+          sit dolore tempor magna incididunt sit et elit ipsum
+    - <2025-12-16 mar> ipsum eiusmod dolore dolor sed sit et adipiscing consectetur
+      - <2026-01-07 mié> eiusmod sed ut aliqua ut lorem labore ipsum aliqua lorem
+        incididunt ipsum tempor do lorem et dolor labore dolor aliqua sit
+*** TODO et, 2021-05, 4, lorem, RESPONSABILITIES
+**** TODO [#A] ipsum, et, 2021-05, 4, lorem, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-11 dom 13:24]--[2026-01-11 dom 13:34] =>  0:10
+     CLOCK: [2026-01-09 vie 12:48]--[2026-01-09 vie 13:00] =>  0:12
+     CLOCK: [2026-01-08 jue 15:46]--[2026-01-08 jue 16:30] =>  0:44
+     CLOCK: [2026-01-07 mié 11:42]--[2026-01-07 mié 11:55] =>  0:13
+     :END:
+*** TODO tempor, 2022-02, 3, lorem, RESPONSABILITIES
+**** TODO magna, tempor, 2022-02, 3, lorem, RESPONSABILITIES
+     :LOGBOOK:
+     CLOCK: [2026-01-08 jue 09:21]--[2026-01-08 jue 12:55] =>  3:34
+     CLOCK: [2026-01-07 mié 17:14]--[2026-01-07 mié 17:39] =>  0:25
+     CLOCK: [2026-01-07 mié 12:40]--[2026-01-07 mié 13:05] =>  0:25
+     :END:
+***** TODO amet, magna, tempor, 2022-02, 3, lorem, RESPONSABILITIES
+      :LOGBOOK:
+      CLOCK: [2026-01-11 dom 07:05]--[2026-01-11 dom 13:05] =>  6:00
+      CLOCK: [2026-01-10 sáb 11:21]--[2026-01-10 sáb 22:05] => 10:44
+      CLOCK: [2026-01-09 vie 21:38]--[2026-01-09 vie 22:28] =>  0:50
+      CLOCK: [2026-01-09 vie 11:45]--[2026-01-09 vie 12:07] =>  0:22
+      CLOCK: [2026-01-09 vie 06:54]--[2026-01-09 vie 08:07] =>  1:13
+      CLOCK: [2026-01-08 jue 19:40]--[2026-01-08 jue 21:14] =>  1:34
+      CLOCK: [2026-01-08 jue 13:55]--[2026-01-08 jue 15:46] =>  1:51
+      CLOCK: [2026-01-08 jue 07:49]--[2026-01-08 jue 08:59] =>  1:10
+      CLOCK: [2026-01-07 mié 21:18]--[2026-01-07 mié 22:38] =>  1:20
+      CLOCK: [2026-01-07 mié 11:55]--[2026-01-07 mié 12:40] =>  0:45
+      CLOCK: [2026-01-07 mié 11:00]--[2026-01-07 mié 11:42] =>  0:42
+      :END:

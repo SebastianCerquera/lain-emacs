@@ -1,4 +1,6 @@
 (defun org-log-note-update (state date hour newstate)
+  (require 'org)
+  (require 'org-agenda)
   (re-search-forward (org-item-beginning-re) nil t)
   (let ((regex (concat "\\(.+\\)" state "\\(.+\\)\\[[0-9]+-[0-9]+-[0-9]+ \\(.+\\) [0-9]+:[0-9]+\\]")))
     (re-search-forward regex nil t)
@@ -117,12 +119,34 @@
      ("^.+//itried/\\(.*\\)" . periodic-itried-handler)
      ("^.+//reschedule/\\(.*\\)" . task-reschedule-handler)
      ("^.+//calendar/\\(.*\\)" . calendar-view)
+     ("^.+//scrum/\\(.*\\)" . scrum-view)
      ("^.+//periodic/\\(.*\\)" . periodic-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//chores/\\(.*\\)" . chores-view)
      ("^.+//signal/\\(.*\\)" . signal-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
+
+
+(defun org-scrum-view ()
+  (setq lain-org-files '("/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org"))
+  (lain-kill-org-buffers)
+  (dolist (file lain-org-files)
+    (find-file file))
+  (let ((org-agenda-files lain-org-files))
+    (org-todo-list)
+    (if (get-buffer "*Org Agenda*")
+        (with-current-buffer "*Org Agenda*"
+           (rename-buffer "TASKS.html" t)))))
+
+(defun scrum-view (httpcon)
+  (high-bright-look-and-feel)
+  (org-scrum-view)
+  (save-excursion
+    (set-buffer (get-buffer-create "TASKS.html"))
+    (org-agenda-write "/tmp/org/SCRUM.html" nil nil "TASKS.html"))
+  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+  (elnode-http-return httpcon (concat "<html><a href=" "/SCRUM.html" ">Scrum View</a></html>")))
 
 
 (setq htmlize-head-tags "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
