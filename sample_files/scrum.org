@@ -11,6 +11,7 @@
 #+TODO: NO_STATE LATER | CANCELED
 
 * TODO ipsum
+* TODO Task [with] special? characters
 ** TODO dolore
 *** TODO eiusmod, 2024-01, 4, dolore, RESPONSABILITIES
     :LOGBOOK:

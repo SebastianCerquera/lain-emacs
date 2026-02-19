@@ -4,3 +4,7 @@
 *.swp
 elpa/*
 scrum.org.original
+e2e/node_modules/*
+e2e/package-lock.json
+e2e/test-results/.last-run.json
+e2e/playwright-report/index.html

@@ -471,6 +471,6 @@
 (defun root-handler (httpcon)
   (elnode-hostpath-dispatcher httpcon my-app-routes))
  
-(elnode-start 'root-handler :port 8080 :host "*")
+(elnode-start 'root-handler :port 8080 :host "0.0.0.0")
 
 (provide 'lain)
