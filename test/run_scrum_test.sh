@@ -15,9 +15,9 @@ docker build -t lain-emacs-test .
 
 echo "Running tests..."
 docker run --rm \
-  --entrypoint /bin/bash \
+  -e SCRUM_AGENDA_FILES="/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org" \
   -v /home/agentworkstation/sources/lain-emacs/lain/lain.el:/root/.emacs.d/lain/lain.el \
   -v /home/agentworkstation/sources/lain-emacs/sample_files/scrum.org:/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org \
   -v /home/agentworkstation/sources/lain-emacs/test/test_scrum_docker.el:/tmp/test.el \
   lain-emacs-test \
-  -c "emacs --batch -l /tmp/test.el"
+  bash -c "emacs --batch -l /tmp/test.el"

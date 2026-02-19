@@ -49,6 +49,13 @@
 
 (evil-mode 1)
 
+(defvar scrum-agenda-files '("/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org")) ;; SCRUM_AGENDA_FILES
+
+(defun scrum-agenda ()
+  (interactive)
+  (let ((org-agenda-files scrum-agenda-files))
+    (org-agenda)))
+
 (defun high-bright-look-and-feel ()
   (interactive)
   (set-background-color "black")

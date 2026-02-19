@@ -1,3 +1,6 @@
+(define-derived-mode lain-mode emacs-lisp-mode "Lain"
+  "Major mode for Lain.")
+
 (defun org-log-note-update (state date hour newstate)
   (require 'org)
   (require 'org-agenda)
@@ -158,8 +161,10 @@
      ("^.*//\\(.*\\)" . elnode-webserver)))
 
 
+(defvar lain-scrum-agenda-files '("/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org")) ;; SCRUM_AGENDA_FILES
+
 (defun org-scrum-view ()
-  (setq lain-org-files '("/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org"))
+  (setq lain-org-files lain-scrum-agenda-files)
   (let ((old (get-buffer "TASKS.html")))
     (if old (kill-buffer old)))
   (lain-kill-org-buffers)

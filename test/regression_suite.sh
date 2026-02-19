@@ -3,9 +3,12 @@
 IMAGE_NAME="lain-emacs-test"
 CONTAINER_NAME="lain-emacs-test-container"
 EMACS_LISP_CODE='
+(require '\''package)
+(package-initialize)
+
 ;; Verify packages
 (defun check-package (package-name)
-  (unless (package-info-installed-p package-name)
+  (unless (package-installed-p package-name)
     (error (format "Package %s is not installed!" package-name))))
 
 (check-package '\''elnode)
@@ -15,11 +18,15 @@ EMACS_LISP_CODE='
 
 ;; Verify htmlize and lain modes
 (require '\''htmlize)
-(with-temp-buffer
-  (htmlize-buffer)
-  (unless (string-match-p "htmlized" (buffer-string))
-    (error "htmlize-buffer failed or did not produce expected output")))
+(let ((html-buf (with-temp-buffer 
+                 (insert "test")
+                 (htmlize-buffer))))
+  (with-current-buffer html-buf
+    (unless (string-match-p "<html" (buffer-string))
+      (error "htmlize-buffer failed or did not produce expected output")))
+  (kill-buffer html-buf))
 
+(add-to-list '\''load-path "/root/.emacs.d/lain")
 (require '\''lain)
 (with-temp-buffer
   (insert "(lain-mode)")
@@ -41,8 +48,8 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "Running Docker container for testing..."
-# Write the Emacs Lisp code to a temporary file inside the container and execute it
-docker run --rm --name $CONTAINER_NAME $IMAGE_NAME bash -c "echo \"$EMACS_LISP_CODE\" > /tmp/test.el && emacs --batch -l /tmp/test.el"
+# Use stdin to pass the Emacs Lisp code to avoid escaping issues with bash -c
+echo "$EMACS_LISP_CODE" | docker run --rm -i --name $CONTAINER_NAME $IMAGE_NAME bash -c "cat > /tmp/test.el && emacs --batch -l /tmp/test.el"
 
 if [ $? -ne 0 ]; then
     echo "Regression tests failed!"
