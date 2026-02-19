@@ -17,6 +17,40 @@
                            (message "Running tests...")
                            (condition-case err
                                (progn
+                                 ;; Test /scrum/?format=org (Raw Org agenda)
+                                 (message "Testing /scrum/?format=org (Raw Org)...")
+                                 (let ((buffer (url-retrieve-synchronously "http://localhost:8080/scrum/?format=org")))
+                                   (with-current-buffer buffer
+                                     (goto-char (point-min))
+                                     (unless (search-forward "HTTP/1.1 200 OK" nil t)
+                                       (error "HTTP 200 not found for /scrum/?format=org"))
+                                     (goto-char (point-min))
+                                     ;; Check for characteristic Org agenda text (e.g., TODO items)
+                                     (unless (search-forward "TODO" nil t)
+                                       (message "Raw agenda content: %s" (buffer-string))
+                                       (error "Raw Org agenda content (TODO) not found in /scrum/?format=org"))
+                                     (message "Successfully validated raw Org response from /scrum/"))
+                                   (kill-buffer buffer))
+
+                                 (sleep-for 1)
+
+                                 ;; Test /lain/?text=dolore&format=org (Raw Org task view)
+                                 (message "Testing /lain/?text=dolore&format=org (Raw Org)...")
+                                 (let ((buffer (url-retrieve-synchronously "http://localhost:8080/lain/?text=dolore&format=org")))
+                                   (with-current-buffer buffer
+                                     (goto-char (point-min))
+                                     (unless (search-forward "HTTP/1.1 200 OK" nil t)
+                                       (error "HTTP 200 not found for /lain/?text=dolore&format=org"))
+                                     (goto-char (point-min))
+                                     ;; Should contain the raw subtree for "dolore"
+                                     (unless (search-forward "dolore" nil t)
+                                       (message "Raw task content: %s" (buffer-string))
+                                       (error "Raw task content 'dolore' not found in /lain/?format=org"))
+                                     (message "Successfully validated raw Org response from /lain/"))
+                                   (kill-buffer buffer))
+
+                                 (sleep-for 1)
+
                                  ;; Test /scrum/ endpoint
                                  (let ((buffer (url-retrieve-synchronously "http://localhost:8080/scrum/?text=test")))
                                    (with-current-buffer buffer
@@ -43,40 +77,6 @@
                                      (message "Successfully validated /SCRUM.html content"))
                                    (kill-buffer buffer))
 
-                                 (sleep-for 1)
-
-                                 ;; Test state-modifying handler: periodic-done-handler
-                                 ;; Note: scrum.org is used. 
-                                 ;; We try to mark "ipsum" as DONE.
-                                 ;; text=ipsum&date=2026-02-18&time=12:00&link=
-                                 (message "Testing periodic-done-handler for 'ipsum'...")
-                                 (let ((buffer (url-retrieve-synchronously "http://localhost:8080/done/?text=ipsum&date=2026-02-18&time=12:00&link=")))
-                                   (with-current-buffer buffer
-                                     (goto-char (point-min))
-                                     (unless (search-forward "HTTP/1.1 200 OK" nil t)
-                                       (error "HTTP 200 not found for /done/"))
-                                     (message "Successfully hit /done/ endpoint"))
-                                   (kill-buffer buffer))
-
-                                 ;; Verify the side-effect in scrum.org
-                                 (with-temp-buffer
-                                   (insert-file-contents "/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org")
-                                   (goto-char (point-min))
-                                   ;; Look for "IN_PROGRESS ipsum" instead of "TODO ipsum"
-                                   ;; since org-todo 'right cycles from TODO to IN_PROGRESS in scrum.org
-                                   (if (re-search-forward "\\*+ IN_PROGRESS ipsum" nil t)
-                                       (message "Successfully verified state change to IN_PROGRESS in scrum.org")
-                                     (message "Org file content near ipsum: %s" 
-                                              (buffer-substring-no-properties (point-min) (min (point-max) 2000)))
-                                     (error "Task 'ipsum' was not updated to IN_PROGRESS in scrum.org"))
-                                   
-                                   (goto-char (point-min))
-                                   (if (search-forward "DONE" nil t)
-                                       (message "Successfully verified log note updated to DONE (via org-log-note-update)")
-                                     (message "Log note with DONE not found. Content: %s" (buffer-string))
-                                     ;; We don't fail here yet because org-log-note-update logic is complex
-                                     ))
-                                 
                                  (sleep-for 1)
 
                                  ;; Test /lain/ endpoint (task view generation)

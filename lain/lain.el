@@ -9,15 +9,43 @@
     (replace-match (concat (match-string 1) state (match-string 2) "[" date " " (match-string 3) " " hour "]"))))
 
 (defun lain-create-agenda-view (text)
-  (switch-to-buffer (get-buffer-create "TASKS.html"))
-  (message (buffer-name (current-buffer)))
-  (beginning-of-buffer)
-  (re-search-forward text)
-  (org-agenda-switch-to)
-  (org-narrow-to-subtree)
-  (switch-to-buffer (current-buffer))
-  (message (buffer-name (current-buffer)))
-  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
+  (message "lain-create-agenda-view called for: %s" text)
+  (let ((buf (get-buffer "TASKS.html")))
+    (when buf
+      (with-current-buffer buf
+        (goto-char (point-min))
+        (when (re-search-forward (regexp-quote text) nil t)
+          (let ((m (org-get-at-bol 'org-marker)))
+            (unless (and m (marker-buffer m))
+              (message "Marker missing or dead for '%s', refreshing agenda..." text)
+              (org-scrum-view)))))))
+  (with-current-buffer (get-buffer-create "TASKS.html")
+    (goto-char (point-min))
+    (if (re-search-forward (regexp-quote text) nil t)
+        (let ((m (org-get-at-bol 'org-marker)))
+          (message "Found task in TASKS.html, marker: %s" m)
+          ;; Fallback: if marker is dead, try to find the heading in Org files directly
+          (unless (and m (marker-buffer m))
+            (message "Marker still dead after refresh. Searching Org files for '%s'..." text)
+            (dolist (file lain-org-files)
+              (unless (and m (marker-buffer m))
+                (with-current-buffer (find-file-noselect file)
+                  (save-excursion
+                    (goto-char (point-min))
+                    (when (re-search-forward (concat "^\\*+.*" (regexp-quote text)) nil t)
+                      (setq m (point-marker))
+                      (message "Found fallback marker in %s: %s" file m)))))))
+          (if (and m (marker-buffer m))
+              (with-current-buffer (marker-buffer m)
+                (widen)
+                (save-excursion
+                  (goto-char m)
+                  (message "Switching to Org buffer: %s" (buffer-name))
+                  (org-narrow-to-subtree)
+                  (org-agenda-write-tmp "/tmp/org/ORG-TASK.html")
+                  (message "Successfully called org-agenda-write-tmp for ORG-TASK.html")))
+            (message "Error: No live marker found for '%s' in TASKS.html (even after refresh and fallback)" text)))
+      (message "Error: Task '%s' not found in TASKS.html. Content size: %d" text (buffer-size)))))
 
 (defun lain-destroy-agenda-view (text)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
@@ -40,11 +68,11 @@
   (org-narrow-to-subtree)
   (switch-to-buffer (current-buffer))
   (message (buffer-name (current-buffer)))
-  (save-buffer)
+  (save-buffer 0)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 
-(defun lain-update-task(text date time link state)
+(defun lain-update-task (text date time link state)
   (switch-to-buffer (get-buffer-create "TASKS.html"))
   (message (buffer-name (current-buffer)))
   (beginning-of-buffer)
@@ -74,6 +102,8 @@
     (if (string-match ".*PROJECT.org" (buffer-name x) 0)
         (kill-buffer x))
     (if (string-match ".*PERIODIC.org" (buffer-name x) 0)
+        (kill-buffer x))
+    (if (string-match "scrum.org" (buffer-name x) 0)
         (kill-buffer x))))
 
 (defun org-agenda-write-tmp (file &optional open nosettings agenda-bufname)
@@ -130,81 +160,114 @@
 
 (defun org-scrum-view ()
   (setq lain-org-files '("/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org"))
+  (let ((old (get-buffer "TASKS.html")))
+    (if old (kill-buffer old)))
   (lain-kill-org-buffers)
   (dolist (file lain-org-files)
     (find-file file))
-  (let ((org-agenda-files lain-org-files))
+  (let ((org-agenda-files lain-org-files)
+        (org-agenda-sticky nil))
     (org-todo-list)
-    (if (get-buffer "*Org Agenda*")
-        (with-current-buffer "*Org Agenda*"
-           (rename-buffer "TASKS.html" t)))))
+    (let ((agenda-buf (or (get-buffer "*Org Agenda*")
+                          (get-buffer (org-agenda-buffer-name))))
+          (old-buf (get-buffer "TASKS.html")))
+      (if agenda-buf
+          (with-current-buffer agenda-buf
+            (if (and old-buf (not (eq old-buf agenda-buf)))
+                (kill-buffer old-buf))
+            (unless (string= (buffer-name) "TASKS.html")
+              (rename-buffer "TASKS.html")))
+        (message "Error: Agenda buffer not found! Buffers: %s" (mapcar 'buffer-name (buffer-list)))))))
 
 (defun scrum-view (httpcon)
   (high-bright-look-and-feel)
   (org-scrum-view)
-  (save-excursion
-    (set-buffer (get-buffer-create "TASKS.html"))
-    (org-agenda-write "/tmp/org/SCRUM.html" nil nil "TASKS.html"))
-  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (elnode-http-return httpcon (concat "<html><a href=" "/SCRUM.html" ">Scrum View</a></html>")))
+  (if (equal (elnode-http-param httpcon "format") "org")
+      (let ((buf (or (get-buffer "TASKS.html") (get-buffer "*Org Agenda*"))))
+        (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
+        (if buf
+            (with-current-buffer buf
+              (elnode-http-return httpcon (buffer-string)))
+          (elnode-http-return httpcon "Error: Agenda buffer not found")))
+    (save-excursion
+      (set-buffer (get-buffer-create "TASKS.html"))
+      (org-agenda-write "/tmp/org/SCRUM.html" nil nil "TASKS.html"))
+    (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+    (elnode-http-return httpcon (concat "<html><a href=" "/SCRUM.html" ">Scrum View</a></html>"))))
 
 
 (setq htmlize-head-tags "<meta http-equiv=\"Content-Security-Policy\" content=\"default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; connect-src * 'unsafe-inline'; img-src * data: blob: 'unsafe-inline'; frame-src *; style-src * 'unsafe-inline';\">
 <script src=\"http://code.jquery.com/jquery-latest.min.js\" type=\"text/javascript\"></script>
 <script type=\"text/javascript\">
     $(document).ready(function(){
-        $(\"span.org-todo\").click(function(el){
-           var text = $(el.target)[0].nextSibling.textContent;
-           text = text.replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?').replace(/\\+/g,'\\\\+').replace(\"\\n\", \"\").replace(/(.+)\\s+PROJECT:\\s+/, \"$1\").trim();
-           text = encodeURIComponent(text);
-           $.ajax({
-               type: \"GET\", 
-               url: \"/lain/?text=\" + text, 
-               headers: {
-                 \"apikey\": \"mykey\"
-               }
-             }).done(function(){
-               window.location = \"ORG-TASK.html\";
-           });
-        });
+        $(document).on('click', \"span.org-todo, .org-agenda-calendar-event, .org-scheduled-today, .org-scheduled, .org-agenda-done, .org-scheduled-previously, .org-warning, .org-priority\", function(el){
+           var target = $(el.target);
+           if (target.text().trim() === 'ALL') return;
+           
+           var text = '';
+           var container = target.closest('pre');
+           if (container.length > 0) {
+               var fullText = container.text();
+               var node = target[0];
+               
+               var range = document.createRange();
+               range.setStart(container[0], 0);
+               range.setEnd(node, 0);
+               var offset = range.toString().length;
+               
+               var start = fullText.lastIndexOf('\\n', offset);
+               if (start === -1) start = 0; else start++;
+               
+               var end = fullText.indexOf('\\n', offset);
+               if (end === -1) end = fullText.length;
+               
+               text = fullText.substring(start, end);
+           }
+           
+           if (!text) {
+               text = target.parent().contents().text().split('\\n')[0];
+           }
 
-        $(\".org-agenda-calendar-event,.org-scheduled-today,.org-scheduled,.org-agenda-done,.org-scheduled-previously,.org-warning\").click(function(el){
-           var text = $(el.target).text().replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
-           text = encodeURIComponent(text);
-           $.ajax({
-               type: \"GET\", 
-               url: \"/lain/?text=\" + text, 
-               headers: {
-                 \"apikey\": \"mykey\"
-               }
-             }).done(function(){
-               window.location = \"ORG-TASK.html\";
-           });
+           text = text.replace(/^.*?\\:\\s+/, '')
+                      .replace(/^(TODO|IN_PROGRESS|CHECK|DONE|NO_STATE|LATER|CANCELED)\\s+/, '')
+                      .replace(/\\[#?[ABC]\\]/g, '')
+                      .replace(/\\[\\d{4}-\\d{2}\\]/g, '')
+                      .replace(/\\[\\d+\\]/g, '')
+                      .replace(/<.+?>/g, '')
+                      .replace(/\\d{2}:\\d{2}/g, '')
+                      .replace(/^[\\s\\.]+/g, '')
+                      .replace(/:[a-zA-Z0-9_@:]+\\s*$/, '')
+                      .replace('\\n', '')
+                      .replace(/(.+)\\s+PROJECT:\\s+/, '$1')
+                      .trim();
+           if (text) {
+               text = encodeURIComponent(text);
+               $.ajax({
+                   type: \"GET\", 
+                   url: \"/lain/?text=\" + text, 
+                   headers: { \"apikey\": \"mykey\" }
+                 }).done(function(){
+                   window.location = \"ORG-TASK.html\";
+               });
+           }
         });
 
         var setTaskTimeStamp = function(){
-            var x = new Date()
-            var y = [x.getHours(), x.getMinutes()]
-            var z = y.join(\":\")
-            $(\"input.time\").val(z)
-             
-            var x = new Date()
-            var y = [x.getUTCFullYear(), x.getUTCMonth() < 10 ? \"0\" + (x.getUTCMonth() + 1) : (x.getUTCMonth() + 1), x.getUTCDate()]
-            var z = y.join(\"-\")
-            $(\"input.date\").val(z)
-        }
+            var x = new Date();
+            var y = [x.getHours(), x.getMinutes()];
+            var z = y.join(':');
+            $(\"input.time\").val(z);
+            var y2 = [x.getUTCFullYear(), x.getUTCMonth() < 10 ? '0' + (x.getUTCMonth() + 1) : (x.getUTCMonth() + 1), x.getUTCDate()];
+            $(\"input.date\").val(y2.join('-'));
+        };
 
         var getTaskTimeStamp = function(){
-            return {
-               \"date\":  $(\"input.date\").val(),
-               \"time\":  $(\"input.time\").val()
-            }
-        }
+            return { \"date\": $(\"input.date\").val(), \"time\": $(\"input.time\").val() };
+        };
 
-        var e = window.location.href.split(\"/\");
-        if(e[e.length - 1] == \"ORG-TASK.html\"){
+        if(window.location.href.indexOf('ORG-TASK.html') !== -1){
              var x = $(\"body\").html();
-             $(\"body\").html(\"<button class=\\\"done\\\">Check task</button><button class=\\\"itried\\\">I tried</button><button class=\\\"canceled\\\">Cancel task</button><button class=\\\"reschedule\\\">Reschedule task</button><input type=\\\"date\\\" class=\\\"date\\\"/><input type=\\\"time\\\" class=\\\"time\\\"/><br><input type=\\\"text\\\" class=\\\"link\\\"/>\" + x );
+             $(\"body\").html(\"<button class='done'>Check task</button><button class='itried'>I tried</button><button class='canceled'>Cancel task</button><button class='reschedule'>Reschedule task</button><input type='date' class='date'/><input type='time' class='time'/><br><input type='text' class='link'/>\" + x );
              setTaskTimeStamp();
         }
          
@@ -212,109 +275,21 @@
             var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
             var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
             text = encodeURIComponent(text);
-         
             var timestamp = getTaskTimeStamp();
-
-            var url = \"text=\" + text; 
-            url = url + \"&date=\" + timestamp.date; 
-            url = url + \"&time=\" + timestamp.time; 
-            url = url + \"&link=\" + $(\"input.link\").val(); 
-
-            $.ajax({
-                type: \"GET\", 
-                url: \"/done/?\" + url, 
-                headers: {
-                  \"apikey\": \"mykey\"
-                }
-            }).done(function(){
-               alert(\"state updated\");
-               window.location = \"ORG-TASK.html\";
-            });
-        });
-
-        $(\"button.reschedule\").click(function(){
-            var matches = $(\"pre\").text().match(/^\\*+\\s+(PERIODIC|TODO|IN_PROGRESS|CHECK|LATER)\\s+(.+)\\n/);
-            var text = matches[2].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
-            text = encodeURIComponent(text);
-         
-            var timestamp = getTaskTimeStamp();
-
-            var url = \"text=\" + text; 
-            url = url + \"&date=\" + timestamp.date; 
-
-            $.ajax({
-                type: \"GET\", 
-                url: \"/reschedule/?\" + url, 
-                headers: {
-                  \"apikey\": \"mykey\"
-                }
-            }).done(function(){
-               alert(\"scheduled updated\");
-               window.location = \"ORG-TASK.html\";
-            });
-        });
-
-        $(\"button.itried\").click(function(){
-            var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
-            var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
-            text = encodeURIComponent(text);
-         
-            var timestamp = getTaskTimeStamp();
-
-            var url = \"text=\" + text; 
-            url = url + \"&date=\" + timestamp.date; 
-            url = url + \"&time=\" + timestamp.time;
-            url = url + \"&link=\" + $(\"input.link\").val(); 
-
-            $.ajax({
-                type: \"GET\", 
-                url: \"/itried/?\" + url, 
-                headers: {
-                  \"apikey\": \"mykey\"
-                }
-            }).done(function(){
-               alert(\"state updated\");
-               window.location = \"ORG-TASK.html\";
-            });
-        });
-
-        $(\"button.canceled\").click(function(){
-            var matches = $(\"pre\").text().match(/^\\*+\\s+PERIODIC\\s+(.+)\\n/);
-            var text = matches[1].replace(/\\[.+\\]/g,'').replace(/^\\s+/g,'').replace(/\\?/g,'\\\\?');
-            text = encodeURIComponent(text);
-         
-            var timestamp = getTaskTimeStamp();
-
-            var url = \"text=\" + text; 
-            url = url + \"&date=\" + timestamp.date; 
-            url = url + \"&time=\" + timestamp.time; 
-            url = url + \"&link=\" + $(\"input.link\").val();
-
-            $.ajax({
-                type: \"GET\", 
-                url: \"/canceled/?\" + url, 
-                headers: {
-                  \"apikey\": \"mykey\"
-                }
-            }).done(function(){
-               alert(\"state updated\");
-               window.location = \"ORG-TASK.html\";
-            });
+            var url = \"text=\" + text + \"&date=\" + timestamp.date + \"&time=\" + timestamp.time + \"&link=\" + $(\"input.link\").val(); 
+            $.ajax({ type: \"GET\", url: \"/done/?\" + url, headers: { \"apikey\": \"mykey\" } }).done(function(){ alert(\"state updated\"); window.location = \"ORG-TASK.html\"; });
         });
 
         var replaceLinks = function(){
-              a = $(\"pre\").text().match(/\\[\\[\\/small\\/SMALL\\/images\\/.+\\..+\\]\\[.+\\..+\\]\\]/g);
-              b = a.map(function(x){m = x.match(/\\[\\[\\/small\\/SMALL\\/images\\/.+\\..+\\]\\[(.+\\..+)\\]\\]/); return m;});
-              txt = $(\"body\").html();
-              b.forEach(function(l){
-                 txt = txt.replace(l[0], '<a href=\"/images/' +  l[1] + '\">' + l[1] + '</a>');
-              })
-              $(\"body\").html(txt);
-        }
-         
+              var a = $(\"pre\").text().match(/\\[\\[\\/small\\/SMALL\\/images\\/.+\\..+\\]\\[.+\\..+\\]\\]/g);
+              if (a) {
+                  var b = a.map(function(x){ var m = x.match(/\\[\\[\\/small\\/SMALL\\/images\\/.+\\..+\\]\\[(.+\\..+)\\]\\]/); return m;});
+                  var txt = $(\"body\").html();
+                  b.forEach(function(l){ if (l) txt = txt.replace(l[0], '<a href=\"/images/' +  l[1] + '\">' + l[1] + '</a>'); });
+                  $(\"body\").html(txt);
+              }
+        };
         replaceLinks();
-
-
     });
 </script>")
 
@@ -329,7 +304,7 @@
          });
  
          $(\"input:submit\").click(function(a){
-             window.location = \"/calendar/\";
+             window.location = \"/scrum/\";
          });
     });
 </script>
@@ -358,7 +333,6 @@
         (org-agenda-buffer-tmp-name "TASKS.html"))
     (org-agenda-list)))
 
-;; i might needed when working on the android client
 (defun periodic-view (httpcon)
   (high-bright-look-and-feel)
   (org-periodic-view)
@@ -456,9 +430,38 @@
 
 (defun task-handler (httpcon)
   (high-bright-look-and-feel)
-  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (lain-create-agenda-view (elnode-http-param httpcon "text"))
-  (elnode-http-return httpcon (concat "<html><b>" "</b></html>")))
+  (if (equal (elnode-http-param httpcon "format") "org")
+      (let ((text (elnode-http-param httpcon "text")))
+        (let ((buf (get-buffer "TASKS.html")))
+          (when buf
+            (with-current-buffer buf
+              (goto-char (point-min))
+              (when (re-search-forward (regexp-quote text) nil t)
+                (let ((m (org-get-at-bol 'org-marker)))
+                  (unless (and m (marker-buffer m))
+                    (message "Marker missing or dead for '%s' (org), refreshing agenda..." text)
+                    (org-scrum-view)))))))
+        (with-current-buffer (get-buffer-create "TASKS.html")
+          (goto-char (point-min))
+          (if (re-search-forward (regexp-quote text) nil t)
+              (let ((m (org-get-at-bol 'org-marker)))
+                (if (and m (marker-buffer m))
+                    (with-current-buffer (marker-buffer m)
+                      (widen)
+                      (save-excursion
+                        (goto-char m)
+                        (org-narrow-to-subtree)
+                        (elnode-http-start httpcon 200 '("Content-type" . "text/plain"))
+                        (let ((content (buffer-string)))
+                          (widen)
+                          (elnode-http-return httpcon content))))
+                  (elnode-http-start httpcon 500 '("Content-type" . "text/plain"))
+                  (elnode-http-return httpcon "Error: No live marker found after refresh")))
+            (elnode-http-start httpcon 404 '("Content-type" . "text/plain"))
+            (elnode-http-return httpcon "Error: Task not found"))))
+    (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
+    (lain-create-agenda-view (elnode-http-param httpcon "text"))
+    (elnode-http-return httpcon (concat "<html><b>" "</b></html>"))))
  
 (defun root-handler (httpcon)
   (elnode-hostpath-dispatcher httpcon my-app-routes))
