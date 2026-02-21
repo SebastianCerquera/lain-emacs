@@ -1,3 +1,5 @@
+(require 'cl-lib)
+
 (ido-mode t)
 
 (global-set-key (kbd "C-x C-m") 'execute-extended-command)
@@ -31,20 +33,28 @@
 (require 'package)
 ; add MELPA to repository list
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("melpa" . "http://melpa.milkbox.net/packages/")))
+                         ("melpa" . "https://melpa.org/packages/")))
 
 (package-initialize)
 
-(add-to-list 'load-path "~/.emacs.d/htmlize/")
+;; Require all packages, assuming they are pre-installed
+(require 'dash)
 (require 'elnode)
-(require 'htmlize)
+(require 'evil)
+(require 'json) ;; elnode dependency
+
 
 (add-to-list 'load-path "~/.emacs.d/lain/")
 (require 'lain)
 
-(add-to-list 'load-path "~/.emacs.d/evil")
-(require 'evil)
 (evil-mode 1)
+
+(defvar scrum-agenda-files '("/home/agentworkstation/sources/lain-emacs/sample_files/scrum.org")) ;; SCRUM_AGENDA_FILES
+
+(defun scrum-agenda ()
+  (interactive)
+  (let ((org-agenda-files scrum-agenda-files))
+    (org-agenda)))
 
 (defun high-bright-look-and-feel ()
   (interactive)
