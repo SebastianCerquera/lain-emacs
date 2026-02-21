@@ -156,7 +156,6 @@
      ("^.+//periodic/\\(.*\\)" . periodic-view)
      ("^.+//todo/\\(.*\\)" . todo-view)
      ("^.+//chores/\\(.*\\)" . chores-view)
-     ("^.+//signal/\\(.*\\)" . signal-view)
      ("^.+//base.html" . cookie-handler)
      ("^.*//\\(.*\\)" . elnode-webserver)))
 
@@ -234,10 +233,9 @@
            }
 
            text = text.replace(/^.*?\\:\\s+/, '')
+                      .replace(/^[\\s\\*\\.]*/, '')
                       .replace(/^(TODO|IN_PROGRESS|CHECK|DONE|NO_STATE|LATER|CANCELED)\\s+/, '')
                       .replace(/\\[#?[ABC]\\]/g, '')
-                      .replace(/\\[\\d{4}-\\d{2}\\]/g, '')
-                      .replace(/\\[\\d+\\]/g, '')
                       .replace(/<.+?>/g, '')
                       .replace(/\\d{2}:\\d{2}/g, '')
                       .replace(/^[\\s\\.]+/g, '')
@@ -402,14 +400,7 @@
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (elnode-http-return httpcon (concat "<html><a href=" "/CHORES.html" ">Chores View</a></html>")))
 
-(defun signal-view (httpcon)
-  (high-bright-look-and-feel)
-  (find-file "/small/SMALL/SIGNAL.org")
-  (org-agenda-write-tmp "/tmp/org/SIGNAL.html")
-  (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
-  (elnode-http-return httpcon (concat "<html><a href=" "/SIGNAL.html" ">Signal View</a></html>")))
-
-(defun task-reschedule-handler (httpcon)
+ (defun task-reschedule-handler (httpcon)
   (high-bright-look-and-feel)
   (elnode-http-start httpcon 200 '("Content-type" . "text/html"))
   (lain-reschedule-task (elnode-http-param httpcon "text") (elnode-http-param httpcon "date"))
