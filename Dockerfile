@@ -22,7 +22,7 @@ RUN emacs --batch \
 COPY entrypoint.sh /opt/entrypoint.sh
 RUN chmod +x /opt/entrypoint.sh
 
-RUN git config --global user.email "sebastian2zenggmail.com"
+RUN git config --global user.email "lain@mail.com"
 RUN git config --global user.name "LAIN"
 
 ENTRYPOINT ["/opt/entrypoint.sh"]
