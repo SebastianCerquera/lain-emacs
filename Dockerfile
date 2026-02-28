@@ -17,7 +17,8 @@ RUN emacs --batch \
     --eval "(package-install 'evil)" \
     --eval "(package-install 'dash)" \
     --eval "(package-install 'json)" \
-    --eval "(package-install 'htmlize)"
+    --eval "(package-install 'htmlize)" \
+    --eval "(package-install 'undo-tree)"
 
 COPY entrypoint.sh /opt/entrypoint.sh
 RUN chmod +x /opt/entrypoint.sh

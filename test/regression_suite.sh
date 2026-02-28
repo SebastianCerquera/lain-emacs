@@ -16,6 +16,7 @@ EMACS_LISP_CODE='
 (check-package '\''dash)
 (check-package '\''json)
 
+
 ;; Verify htmlize and lain modes
 (require '\''htmlize)
 (let ((html-buf (with-temp-buffer 

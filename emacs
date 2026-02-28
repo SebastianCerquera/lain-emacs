@@ -42,6 +42,9 @@
 (require 'elnode)
 (require 'evil)
 (require 'json) ;; elnode dependency
+(require 'undo-tree)
+(global-undo-tree-mode 1)
+
 
 
 (add-to-list 'load-path "~/.emacs.d/lain/")
