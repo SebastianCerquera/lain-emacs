@@ -46,7 +46,8 @@
                   (message "Switching to Org buffer: %s" (buffer-name))
                   (org-narrow-to-subtree)
                   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html")
-                  (message "Successfully called org-agenda-write-tmp for ORG-TASK.html")))
+                  (message "Successfully called org-agenda-write-tmp for ORG-TASK.html")
+                  (widen)))
             (message "Error: No live marker found for '%s' in TASKS.html (even after refresh and fallback)" text)))
       (message "Error: Task '%s' not found in TASKS.html. Content size: %d" text (buffer-size)))))
 
@@ -72,6 +73,7 @@
   (switch-to-buffer (current-buffer))
   (message (buffer-name (current-buffer)))
   (save-buffer 0)
+  (widen)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 
@@ -89,6 +91,7 @@
   (org-log-note-update "DONE" date time (if (string-empty-p link) state (concat "[[" link "]" "[" state "]]")))
   (message (buffer-name (current-buffer)))
   (save-buffer)
+  (widen)
   (org-agenda-write-tmp "/tmp/org/ORG-TASK.html"))
 
 (defun lain-done-task (text date time link)
@@ -106,7 +109,7 @@
         (kill-buffer x))
     (if (string-match ".*PERIODIC.org" (buffer-name x) 0)
         (kill-buffer x))
-    (if (string-match "scrum.org" (buffer-name x) 0)
+    (if (string-match "scrum.*\.org" (buffer-name x) 0)
         (kill-buffer x))))
 
 (defun org-agenda-write-tmp (file &optional open nosettings agenda-bufname)
