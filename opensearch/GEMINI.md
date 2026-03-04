@@ -123,124 +123,18 @@ If you'd like, I can help you refine the graph transformation, propose complexit
 [4]: https://www.statsig.com/perspectives/tdd-principles-tools-pitfalls?utm_source=chatgpt.com "Test‑driven development: principles, tools & pitfalls - Statsig"
 [5]: https://www.reddit.com/r/SoftwareEngineering/comments/1j7tcfy/tdd_on_trial_does_testdriven_development_really/?utm_source=chatgpt.com "TDD on Trial: Does Test-Driven Development Really Work? - Reddit"
 
+## Role: Lead Architect & Technical Auditor.
 
-## QA contracts 
+Objective: Validate user intent against the provided monorepo grounding material.
 
-Here’s a compact, implementation-ready JSON graph that captures a minimal ontology for software user stories and requirements. It includes just the core node types and relationships most teams need: UserStory, Requirement (with Functional/NonFunctional variants), AcceptanceCriterion, Actor, and TestCase; plus standard requirement links inspired by SysML (trace, refine, satisfy, verify, derive) and the canonical user-story structure (persona/need/purpose) with acceptance criteria
+### The Protocol:
 
-{
-  "metadata": {
-    "ontology": "MinimalUserStoriesAndRequirements",
-    "version": "1.0.0",
-    "description": "A minimal graph ontology to represent agile user stories and software requirements with acceptance criteria and tests."
-  },
-  "schema": {
-    "nodeTypes": {
-      "UserStory": {
-        "requiredProps": ["id", "title", "role", "goal", "benefit"],
-        "optionalProps": ["status", "priority", "storyPoints", "rationale", "source"]
-      },
-      "Requirement": {
-        "requiredProps": ["id", "text"],
-        "optionalProps": ["type", "priority", "status", "rationale", "source"],
-        "enum": { "type": ["FunctionalRequirement", "NonFunctionalRequirement"] }
-      },
-      "AcceptanceCriterion": {
-        "requiredProps": ["id", "text"],
-        "optionalProps": ["status"]
-      },
-      "Actor": {
-        "requiredProps": ["id", "name"],
-        "optionalProps": ["type"],
-        "enum": { "type": ["Persona", "System", "ExternalService", "Stakeholder"] }
-      },
-      "TestCase": {
-        "requiredProps": ["id", "name"],
-        "optionalProps": ["status", "automationId", "suite"]
-      }
-    },
-    "edgeTypes": {
-      "TRACE":        { "from": ["UserStory","Requirement"], "to": ["Requirement"], "note": "General traceability link." },
-      "REFINE":       { "from": ["UserStory","Requirement"], "to": ["Requirement"], "note": "Refines a broader requirement." },
-      "DERIVE":       { "from": ["Requirement"], "to": ["Requirement"], "note": "Derived requirement relationship." },
-      "SATISFY":      { "from": ["UserStory"], "to": ["Requirement"], "note": "Story satisfies (implements) a requirement." },
-      "VERIFY":       { "from": ["TestCase"], "to": ["Requirement","AcceptanceCriterion"], "note": "Test verifies requirement/criterion." },
-      "HAS_CRITERION":{ "from": ["UserStory"], "to": ["AcceptanceCriterion"], "note": "Story is complete when criteria pass." },
-      "HAS_ACTOR":    { "from": ["UserStory"], "to": ["Actor"], "note": "Primary actor/persona of the story." },
-      "DEPENDS_ON":   { "from": ["UserStory","Requirement"], "to": ["UserStory","Requirement"], "note": "Dependency/precedence link." },
-      "DECOMPOSES_INTO": { "from": ["Requirement"], "to": ["Requirement"], "note": "Parent requirement decomposes into children." }
-    }
-  },
-  "graph": {
-    "nodes": [
-      {
-        "type": "Actor",
-        "id": "actor.checkout_customer",
-        "name": "Online Shopper",
-        "typeDetail": "Persona"
-      },
-      {
-        "type": "UserStory",
-        "id": "us.checkout_001",
-        "title": "Card payment at checkout",
-        "role": "Online Shopper",
-        "goal": "pay with a credit or debit card",
-        "benefit": "complete purchases quickly and securely",
-        "status": "Planned",
-        "priority": "High",
-        "source": "Product backlog"
-      },
-      {
-        "type": "AcceptanceCriterion",
-        "id": "ac.checkout_001.a",
-        "text": "Given valid card details, when I confirm, then the payment is authorized and an order is created."
-      },
-      {
-        "type": "AcceptanceCriterion",
-        "id": "ac.checkout_001.b",
-        "text": "Declined payments show a clear error without losing cart contents."
-      },
-      {
-        "type": "Requirement",
-        "id": "req.func.001",
-        "text": "The system shall process card payments via PCI-compliant gateway.",
-        "type": "FunctionalRequirement",
-        "priority": "High",
-        "status": "Draft"
-      },
-      {
-        "type": "Requirement",
-        "id": "req.nfr.001",
-        "text": "Payment authorization shall complete within 2 seconds p95.",
-        "type": "NonFunctionalRequirement",
-        "priority": "Medium",
-        "status": "Draft"
-      },
-      {
-        "type": "TestCase",
-        "id": "tc.pay.auth.success",
-        "name": "Authorize payment — happy path",
-        "status": "NotRun",
-        "automationId": "PAY_AUTH_001"
-      },
-      {
-        "type": "TestCase",
-        "id": "tc.pay.auth.declined",
-        "name": "Handle declined payment gracefully",
-        "status": "NotRun",
-        "automationId": "PAY_DECLINE_001"
-      }
-    ],
-    "edges": [
-      { "type": "HAS_ACTOR", "from": "us.checkout_001", "to": "actor.checkout_customer" },
-      { "type": "HAS_CRITERION", "from": "us.checkout_001", "to": "ac.checkout_001.a" },
-      { "type": "HAS_CRITERION", "from": "us.checkout_001", "to": "ac.checkout_001.b" },
-      { "type": "SATISFY", "from": "us.checkout_001", "to": "req.func.001" },
-      { "type": "TRACE", "from": "us.checkout_001", "to": "req.nfr.001" },
-      { "type": "VERIFY", "from": "tc.pay.auth.success", "to": "ac.checkout_001.a" },
-      { "type": "VERIFY", "from": "tc.pay.auth.declined", "to": "ac.checkout_001.b" },
-      { "type": "VERIFY", "from": "tc.pay.auth.success", "to": "req.func.001" },
-      { "type": "VERIFY", "from": "tc.pay.auth.success", "to": "req.nfr.001" }
-    ]
-  }
-}
+1) Analyze (Deconstruct Intent): Break down the user's request into specific architectural layers (e.g., Frontend, Backend, Shared Libs, Infra/DevOps). 🗺️
+
+2) Identify (Block Mapping): Locate the specific directories, types, or API endpoints in the grounding material that would be impacted or required by this intent. 🔍
+
+3) Challenge (Contextual Contradiction): Compare the intent against the existing code. Identify where the user's assumptions conflict with the current schema, existing patterns, or architectural constraints. ⚖️
+
+4) Respond: Output ONLY 2-3 targeted questions designed to resolve the identified technical gaps or contradictions.
+
+Constraint: Do not suggest implementations. Do not provide code. Do not summarize the repo. Only ask the questions necessary to reach "Material Completeness."
