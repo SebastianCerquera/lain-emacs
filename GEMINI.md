@@ -10,9 +10,9 @@ A **self-refining, dialectic software development process** that leverages TDD, 
 
 1. Write a failing test (**Red**),
 2. Write just enough code to pass it (**Green**),
-3. Refactor to improve structure while keeping behavior intact (**Refactor**) ([blog.cleancoder.com][1], [Wikipedia][2]).
+3. Refactor to improve structure while keeping behavior intact (**Refactor**).
 
-This cycle naturally drives clean, modular, loosely coupled design—qualities aligned with **SOLID principles** (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion). TDD encourages thinking of the interface first, thus promoting better design and maintainability ([Wikipedia][2], [Medium][3]). It also results in robust, confidence-building test suites and high modularity ([statsig.com][4], [Wikipedia][2]).
+This cycle naturally drives clean, modular, loosely coupled design—qualities aligned with **SOLID principles** (Single responsibility, Open-closed, Liskov substitution, Interface segregation, Dependency inversion). TDD encourages thinking of the interface first, thus promoting better design and maintainability. It also results in robust, confidence-building test suites and high modularity.
 
 ---
 
@@ -81,11 +81,11 @@ Let's build your process into a structured dialectic, with two sides—**tests**
 
 ### Why this works: Benefits backed by practice
 
-* **Design-First via Testing**: TDD makes you think interface first and implementation second, improving design quality ([Wikipedia][2]).
-* **SOLID Adherence via Refactoring**: Iterative Refactor phase encourages clean, single-responsibility modular code ([Medium][3], [Wikipedia][2]).
+* **Design-First via Testing**: TDD makes you think interface first and implementation second, improving design quality.
+* **SOLID Adherence via Refactoring**: Iterative Refactor phase encourages clean, single-responsibility modular code.
 * **Human Oversight Reduces Drift**: The human-in-loop ensures requirements are aligned with actual value and removes divergence.
 * **Pattern Comparison Empowers Informed Decisions**: Complexity estimates help choose simpler patterns, avoid over-engineering.
-* **Self-Improving Over Time**: As seen in TDD practice, code quality and test suite grow stronger with repetition and discipline ([Reddit][5]).
+* **Self-Improving Over Time**: As seen in TDD practice, code quality and test suite grow stronger with repetition and discipline.
 
 ---
 
@@ -117,14 +117,21 @@ This dialectic framework leverages TDD and SOLID to make software **self-improvi
 
 If you'd like, I can help you refine the graph transformation, propose complexity metrics for comparison, or prototype a spoken specification format for this process.
 
-[1]: https://blog.cleancoder.com/uncle-bob/2014/12/17/TheCyclesOfTDD.html?utm_source=chatgpt.com "The Cycles of TDD - Clean Coder Blog - Uncle Bob"
-[2]: https://en.wikipedia.org/wiki/Test-driven_development?utm_source=chatgpt.com "Test-driven development"
-[3]: https://medium.com/%40dees3g/a-guide-to-test-driven-development-tdd-with-real-world-examples-d92f7c801607?utm_source=chatgpt.com "A Guide to Test-Driven Development (TDD) with Real-World Examples"
-[4]: https://www.statsig.com/perspectives/tdd-principles-tools-pitfalls?utm_source=chatgpt.com "Test‑driven development: principles, tools & pitfalls - Statsig"
-[5]: https://www.reddit.com/r/SoftwareEngineering/comments/1j7tcfy/tdd_on_trial_does_testdriven_development_really/?utm_source=chatgpt.com "TDD on Trial: Does Test-Driven Development Really Work? - Reddit"
+---
+
+### Methodology Safeguards & Anti-Drift Protocol
+
+To maintain the integrity of the dialectic process and prevent systemic drift, the following safeguards are mandatory:
+
+1.  **Requirement Immutability (The "Save to Disk" Rule):** No implementation or pattern exploration may begin until the requirement is confirmed and explicitly saved to a persistent file (e.g., in a `requirements/` directory). Documentation is the contract for the dialectic.
+2.  **Unit Test Supremacy (The "No Side-Channels" Rule):** Verification via temporary reproduction scripts is insufficient. A task is only "Green" when the official, permanent regression suite is updated and passing.
+3.  **Synthetic Data Mandate (The "Zero-Leak" Rule):** Never use raw, sensitive, or grounded dataset content (e.g., PII, specific file paths, or private tasks) in source code or tests. Identify the *structural* trigger of an issue and recreate it using synthetic, anonymized placeholders.
+4.  **Empirical Grounding:** Do not project standard semantics onto domain-specific syntax (e.g., Org-mode markers). Validate structural and inheritance rules via research before proposing architectural patterns.
+5.  **Lifecycle Integrity:** The Research -> Strategy -> Execution cycle is mandatory for all tasks, including bug fixes. Velocity must never bypass the "Red" (failing test) phase of TDD.
+
+---
 
 ## Role: Lead Architect & Technical Auditor.
-
 Objective: Validate user intent against the provided monorepo grounding material.
 
 ### The Protocol:

@@ -116,8 +116,8 @@ class ThreadParserTest(unittest.TestCase):
 
         task = OrgTask(node)
 
-        thread = OrgThread("""- <2024-05-11 sáb> 
-  \\begin{verbatim}
+        thread = OrgThread(r"""- <2024-05-11 sáb> 
+  \begin{verbatim}
     def test():
         pass
   \end{verbatim}""", task=task)
@@ -127,7 +127,7 @@ class ThreadParserTest(unittest.TestCase):
 
         #then: 
         self.assertEqual(len(thread.children), 0)
-        self.assertEqual(thread.content, """\\begin{verbatim}
+        self.assertEqual(thread.content, r"""\begin{verbatim}
     def test():
         pass
   \end{verbatim}""")
@@ -139,15 +139,15 @@ class ThreadParserTest(unittest.TestCase):
 
         task = OrgTask(node)
 
-        thread = OrgThread("""- 
-  \\begin{verbatim}
+        thread = OrgThread(r"""- 
+  \begin{verbatim}
   \end{verbatim}""", task=task)
 
         #when: 
         self.parser.parse_thread(thread)
 
         #then: 
-        self.assertEqual(thread.content, """\\begin{verbatim}
+        self.assertEqual(thread.content, r"""\begin{verbatim}
   \end{verbatim}""")
         
         self.assertEqual(len(thread.children), 0)
@@ -159,8 +159,8 @@ class ThreadParserTest(unittest.TestCase):
 
         task = OrgTask(node)
 
-        thread = OrgThread("""- code block
-  \\begin{verbatim}
+        thread = OrgThread(r"""- code block
+  \begin{verbatim}
   \end{verbatim}""", task=task)
 
         #when: 
@@ -566,5 +566,68 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         self.assertEqual(s0.message_priority, 0)
         self.assertEqual(s1.message_priority, 1)
         self.assertNotEqual(s0.node_id, s1.node_id)
+
+    def test_parse_org_thread_with_hyphenated_link_integrity(self):
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+        task = OrgTask(node)
+
+        # A thread with a hyphenated link and a hyphenated word
+        raw_content = "- <2025-01-01> [[file.org::some-task-2020]] with compound-word"
+        thread = OrgThread(raw_content, task)
+
+        # when:
+        self.parser.parse_thread(thread)
+
+        # then:
+        # It should NOT split at the hyphens inside the link or word
+        self.assertEqual(thread.content, "[[file.org::some-task-2020]] with compound-word")
+        self.assertEqual(len(thread.children), 0, "Should not have subthreads from mid-line hyphens")
+
+    def test_parse_org_thread_still_splits_actual_bullets(self):
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+        task = OrgTask(node)
+
+        raw_content = """- <2025-01-01> Parent thread
+  - Actual subthread 1
+  - Actual subthread 2"""
+        thread = OrgThread(raw_content, task)
+
+        # when:
+        self.parser.parse_thread(thread)
+
+        # then:
+        self.assertEqual(thread.content, "Parent thread")
+        self.assertEqual(len(thread.children), 2, "Should split on actual newline-prefixed bullets")
+        self.assertEqual(thread.children[0].raw, "- Actual subthread 1")
+        self.assertEqual(thread.children[1].raw, "- Actual subthread 2")
+
+    def test_parse_org_thread_real_world_integrity(self):
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+        task = OrgTask(node)
+
+        # Case 1: The '2020-9' link that was being split (Anonymized)
+        raw_1 = "- <2023-05-31 mié> [[../path/file.org::TAG, category, some-location, 2020-9, detail, sub-detail, type]]"
+        thread_1 = OrgThread(raw_1, task)
+
+        # Case 2: A relative link with date and multiple hyphens (Anonymized)
+        raw_2 = "- <2025-11-17> [[./file.2025.11.03.org::some-task, category, 2025]]"
+        thread_2 = OrgThread(raw_2, task)
+
+        # when:
+        self.parser.parse_thread(thread_1)
+        self.parser.parse_thread(thread_2)
+
+        # then:
+        self.assertEqual(thread_1.content, "[[../path/file.org::TAG, category, some-location, 2020-9, detail, sub-detail, type]]")
+        self.assertEqual(len(thread_1.children), 0)
+
+        self.assertEqual(thread_2.content, "[[./file.2025.11.03.org::some-task, category, 2025]]")
+        self.assertEqual(len(thread_2.children), 0)
 
 

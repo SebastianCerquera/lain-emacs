@@ -342,7 +342,7 @@ class OrgDatabase(OrgVisitor):
 
 class ThreadParser():
 
-    ORG_BULLET_PATTERN = r'-?\s*<(\d{4}-\d{2}-\d{2}).{0,5}>\s(.*)'
+    ORG_BULLET_PATTERN = r'\s*-?\s*<(\d{4}-\d{2}-\d{2}).{0,5}>\s(.*)'
 
     ORG_LOG_PATTERN = r'\sState\s"(\w+)"'
 
@@ -391,6 +391,9 @@ class ThreadParser():
     
     @staticmethod
     def _check_code_block(thread: OrgThread, content: str) -> bool:
+        if content is None:
+            return False
+
         start_block = content.find("\\begin{verbatim}")
 
         if start_block == -1:
@@ -415,45 +418,45 @@ class ThreadParser():
             thread.timestamp = datetime.datetime.strptime(date_text.group(1), '%Y-%m-%d').replace(tzinfo=GMT_MINUS_5)
 
             body = date_text.group(2)
-            next_bullet = body.find("-")
+            # Find the first bullet following a newline (actual subthread) or at the start
+            match = re.search(r'(^|\n)[ \t]*-', body)
+            next_bullet = match.start() if match else -1
 
-            new_line = body[:next_bullet].rfind("\n")
-
-            subthreads = ThreadParser.parse_raw(
-                body[next_bullet:] if new_line == -1 else body[new_line:], thread.task)
-            
-            if not subthreads:
-                thread.content = body.strip()
-            else:
+            if next_bullet != -1:
+                # If next_bullet is 0, content should be empty string
                 thread.content = body[:next_bullet].strip()
+                subthreads = ThreadParser.parse_raw(body[next_bullet+1:], thread.task)
+                if subthreads:
+                    for subthread in subthreads:
+                        thread.add_child(subthread)
+            else:
+                thread.content = body.strip()
 
             ThreadParser._check_code_block(thread, thread.content)
-            
-            if not subthreads:
-                return
-
-            for subthread in subthreads:
-                thread.add_child(subthread)
          else:
-            next_bullet = thread.raw.find("-")
+            # For non-timestamped threads
+            # Look for subthreads starting with a bullet after a newline or at the start (if it's not the root bullet)
+            # Since non-timestamped raw starts with the bullet of the thread itself, 
+            # we must look for sub-bullets (deeper indentation or following newline)
+            match = re.search(r'\n[ \t]*-', thread.raw)
+            next_bullet = match.start() if match else -1
 
-            subthreads = ThreadParser.parse_raw(thread.raw[next_bullet+1:], thread.task)
-
-            if not subthreads:
-                thread.content = thread.raw[next_bullet+1:].strip()
+            if next_bullet != -1:
+                thread.content = thread.raw[:next_bullet].strip()
+                # Remove leading bullet if it exists
+                thread.content = re.sub(r'^-', '', thread.content).strip()
 
                 ThreadParser._check_code_block(thread, thread.content)
 
-                thread.content = None if thread.content == '' else thread.content
-
+                subthreads = ThreadParser.parse_raw(thread.raw[next_bullet+1:], thread.task)
+                if subthreads:
+                    for subthread in subthreads:
+                        thread.add_child(subthread)
             else:
-                list_index = subthreads[0].raw.find("- ")
-                thread.content = subthreads[0].raw[list_index+2:].strip() if list_index != -1 else subthreads[0].raw.strip()
-
+                # No subthreads
+                thread.content = re.sub(r'^-', '', thread.raw).strip()
                 ThreadParser._check_code_block(thread, thread.content)
-                
-                for subthread in subthreads[1:]:
-                    thread.add_child(subthread)
+                thread.content = None if thread.content == '' else thread.content
 
             if thread.content:
                 thread.timestamp = None
