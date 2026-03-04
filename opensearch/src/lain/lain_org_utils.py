@@ -102,6 +102,11 @@ class OrgThread(OrgThreadComponent):
         self.content = content
 
         self.task = task
+        
+        self.node_id = None
+        self.parent_id = None
+        self.thread_id = None
+        self.message_priority = None
 
     def add_child(self, child: 'OrgThread'):
         child.parent = self
@@ -112,7 +117,11 @@ class OrgThread(OrgThreadComponent):
             'thread_date': self.timestamp,
             "thread_body": self.content,
             "task_id": self.task.id,
-            "task_title": self.task.title
+            "task_title": self.task.title,
+            "node_id": self.node_id,
+            "parent_id": self.parent_id,
+            "thread_id": self.thread_id,
+            "message_priority": self.message_priority
         }
 
     def accept(self, visitor):
@@ -239,6 +248,18 @@ class OrgDatabase(OrgVisitor):
             },
             "thread_date": {
               "type": "date",
+            },
+            "node_id": {
+              "type": "keyword"
+            },
+            "parent_id": {
+              "type": "keyword"
+            },
+            "thread_id": {
+              "type": "keyword"
+            },
+            "message_priority": {
+              "type": "integer"
             }
           }
         }
@@ -296,11 +317,11 @@ class OrgDatabase(OrgVisitor):
 
     def visit_org_thread(self, thread: OrgThread):
         logger.debug("Visiting org thread: %s", thread.to_json())
-        if "\\end{verbatim" in thread.content:
+        if thread.content and "\\end{verbatim" in thread.content:
             return
 
         try:
-            self.elasticsearch.index(index=self.index_name, body=thread.to_json())
+            self.elasticsearch.index(index=self.index_name, body=thread.to_json(), id=thread.node_id)
         except Exception as e:
             logger.error("Failed to index thread: %s", thread.to_json(), exc_info=True)
 
@@ -558,6 +579,47 @@ class OrgThreadContentCollector(OrgVisitor):
         if org_thread.content:
             self.thread_contents.add(org_thread.content)
 
+class HierarchyVisitor(OrgVisitor):
+    def __init__(self):
+        self.current_task = None
+        self.sibling_counters = {} 
+
+    def visit_org_file(self, org_file: OrgFile):
+        pass
+
+    def visit_org_task(self, task: OrgTask):
+        self.current_task = task
+
+    def visit_org_thread(self, thread: OrgThread):
+        # Determine parent_id
+        if not thread.parent:
+            parent_id = self.current_task.id
+            thread_id_val = None 
+        else:
+            parent_id = thread.parent.node_id
+            thread_id_val = thread.parent.thread_id
+
+        # Sibling index
+        idx = self.sibling_counters.get(parent_id, 0)
+        self.sibling_counters[parent_id] = idx + 1
+
+        # Content hash
+        content = thread.content or ""
+        content_hash = hashlib.sha256(content.encode()).hexdigest()[:12]
+
+        # Node ID: task_id + parent_node_id + sibling_index + content_hash
+        node_id_input = f"{self.current_task.id}{parent_id}{idx}{content_hash}"
+        node_id = hashlib.sha256(node_id_input.encode()).hexdigest()[:12]
+
+        thread.node_id = node_id
+        thread.parent_id = parent_id
+        thread.message_priority = idx
+
+        if thread_id_val is None:
+            thread.thread_id = node_id # Root thread
+        else:
+            thread.thread_id = thread_id_val
+
 class OrgParser:
 
     @staticmethod
@@ -578,8 +640,16 @@ class OrgParser:
                     for nested_task in OrgParser._parse_tasks(child, parent=task)]
 
     @staticmethod
-    def parse(file_path: str) -> OrgFile:
-        org_tree = orgparse.load(file_path)
+    def parse(file_path: str) -> Optional[tuple[OrgFile, 'CleaningVisitor']]:
+        try:
+            org_tree = orgparse.load(file_path)
+        except Exception as e:
+            logger.error(f"orgparse failed to load {file_path}: {e}")
+            return None
+
+        if not org_tree.children:
+            logger.warning(f"No children found in {file_path}")
+            return None
 
         tasks = OrgParser._parse_tasks(org_tree.children[0])
         org_file = OrgFile(tasks[0], tasks[1:])
@@ -590,6 +660,9 @@ class OrgParser:
         cleaning_visitor = CleaningVisitor()
         org_file.accept(cleaning_visitor)
 
+        hierarchy_visitor = HierarchyVisitor()
+        org_file.accept(hierarchy_visitor)
+
         return org_file, cleaning_visitor
 
 class OrgFileDiscovery:
@@ -598,7 +671,7 @@ class OrgFileDiscovery:
         org_files = []
         for root, dirs, files in os.walk(directory):
             for f in files:
-                if f.endswith('.org'):
+                if f.endswith('.org') and not f.startswith('.') and not f.startswith('#') and not f.endswith('~'):
                     org_files.append(os.path.join(root, f))
         return org_files
 
@@ -626,7 +699,10 @@ class OrgModule:
         for file_path in files:
             try:
                 logger.info("Parsing file: %s", file_path)
-                org_file, cleaning_visitor = OrgParser.parse(file_path)
+                result = OrgParser.parse(file_path)
+                if result is None:
+                    continue
+                org_file, cleaning_visitor = result
                 org_file.accept(org_database_visitor)
                 org_database_visitor.index_mappings(cleaning_visitor.links)
             except Exception as e:

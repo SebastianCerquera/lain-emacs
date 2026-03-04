@@ -394,4 +394,118 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
 
         self.assertEqual(threads[2].children[2].children[0].content, "https://test4.com")
 
+    def test_hierarchy_calculation(self):
+        from lain.lain_org_utils import HierarchyVisitor
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+        task = OrgTask(node)
+        task.id = "TASK_ID"
+
+        # A nested structure:
+        # - Parent
+        #   - Child
+        parent_thread = OrgThread("- Parent", task)
+        child_thread = OrgThread("- Child", task, parent=parent_thread)
+        parent_thread.add_child(child_thread)
+        
+        # We need to simulate the cleaning visitor setting content
+        parent_thread.content = "Parent"
+        child_thread.content = "Child"
+
+        visitor = HierarchyVisitor()
+        visitor.visit_org_task(task)
+        parent_thread.accept(visitor)
+
+        # then:
+        self.assertIsNotNone(parent_thread.node_id)
+        self.assertEqual(parent_thread.parent_id, "TASK_ID")
+        self.assertEqual(parent_thread.thread_id, parent_thread.node_id)
+        self.assertEqual(parent_thread.message_priority, 0)
+
+        self.assertIsNotNone(child_thread.node_id)
+        self.assertEqual(child_thread.parent_id, parent_thread.node_id)
+        self.assertEqual(child_thread.thread_id, parent_thread.node_id)
+        self.assertEqual(child_thread.message_priority, 0)
+
+    def test_stable_id_generation(self):
+        from lain.lain_org_utils import HierarchyVisitor
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+        task = OrgTask(node)
+        task.id = "TASK_ID"
+
+        def create_and_visit():
+            parent = OrgThread("- Parent", task)
+            parent.content = "Parent"
+            visitor = HierarchyVisitor()
+            visitor.visit_org_task(task)
+            parent.accept(visitor)
+            return parent.node_id
+
+        # when:
+        id1 = create_and_visit()
+        id2 = create_and_visit()
+
+        # then:
+        self.assertEqual(id1, id2)
+
+    def test_shared_thread_id_deep_nesting(self):
+        from lain.lain_org_utils import HierarchyVisitor
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+        task = OrgTask(node)
+        task.id = "TASK_ID"
+
+        # - A
+        #   - A1
+        #     - A1a
+        thread_a = OrgThread("- A", task)
+        thread_a.content = "A"
+        thread_a1 = OrgThread("- A1", task, parent=thread_a)
+        thread_a1.content = "A1"
+        thread_a1a = OrgThread("- A1a", task, parent=thread_a1)
+        thread_a1a.content = "A1a"
+        
+        thread_a.add_child(thread_a1)
+        thread_a1.add_child(thread_a1a)
+
+        visitor = HierarchyVisitor()
+        visitor.visit_org_task(task)
+        thread_a.accept(visitor)
+
+        # then:
+        self.assertEqual(thread_a.thread_id, thread_a.node_id)
+        self.assertEqual(thread_a1.thread_id, thread_a.node_id)
+        self.assertEqual(thread_a1a.thread_id, thread_a.node_id)
+
+    def test_sibling_priority(self):
+        from lain.lain_org_utils import HierarchyVisitor
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TITLE"
+        task = OrgTask(node)
+        task.id = "TASK_ID"
+
+        # - Sibling 0
+        # - Sibling 1
+        s0 = OrgThread("- S0", task)
+        s0.content = "S0"
+        s1 = OrgThread("- S1", task)
+        s1.content = "S1"
+        
+        task.threads = [s0, s1]
+
+        visitor = HierarchyVisitor()
+        visitor.visit_org_task(task)
+        s0.accept(visitor)
+        s1.accept(visitor)
+
+        # then:
+        self.assertEqual(s0.message_priority, 0)
+        self.assertEqual(s1.message_priority, 1)
+        self.assertNotEqual(s0.node_id, s1.node_id)
+
 

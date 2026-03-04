@@ -261,5 +261,84 @@ class TestOpenSearchIntegration(unittest.TestCase): # Renamed class
         self.assertTrue(thread_date.endswith("-05:00"), f"Expected thread_date to end with -05:00, got {thread_date}")
         self.assertIn("2024-05-18T00:00:00-05:00", thread_date)
 
+    def test_retrieve_entire_tree_by_thread_id(self):
+        # given:
+        node = MagicMock(spec=OrgNode)
+        node.heading = "Tree Retrieval Task"
+        task = OrgTask(node)
+        task.id = "TASKID_TREE_TEST"
+        
+        # Structure:
+        # - Parent (Root)
+        #   - Child 1
+        #   - Child 2
+        #     - Grandchild 2.1
+        
+        parent = OrgThread("- Parent", task)
+        child1 = OrgThread("- Child 1", task, parent=parent)
+        child2 = OrgThread("- Child 2", task, parent=parent)
+        grandchild21 = OrgThread("- Grandchild 2.1", task, parent=child2)
+        
+        parent.add_child(child1)
+        parent.add_child(child2)
+        child2.add_child(grandchild21)
+        
+        # Set raw for parsing
+        parent.raw = "- Parent"
+        child1.raw = "- Child 1"
+        child2.raw = "- Child 2"
+        grandchild21.raw = "- Grandchild 2.1"
+        
+        # Set content for ID generation (simulating CleaningVisitor)
+        parent.content = "Parent"
+        child1.content = "Child 1"
+        child2.content = "Child 2"
+        grandchild21.content = "Grandchild 2.1"
+        
+        from lain.lain_org_utils import HierarchyVisitor
+        visitor = HierarchyVisitor()
+        visitor.visit_org_task(task)
+        parent.accept(visitor)
+        
+        # Index all threads
+        self.org_database_visitor.visit_org_thread(parent)
+        self.org_database_visitor.visit_org_thread(child1)
+        self.org_database_visitor.visit_org_thread(child2)
+        self.org_database_visitor.visit_org_thread(grandchild21)
+        
+        self.os_client.indices.refresh(index=self.test_index_name)
+        
+        # when: Retrieve all threads by thread_id
+        thread_id = parent.node_id
+        search_body = {
+            "query": {
+                "term": {"thread_id": thread_id}
+            }
+        }
+        search_result = self.os_client.search(index=self.test_index_name, body=search_body)
+        
+        # then:
+        self.assertEqual(search_result['hits']['total']['value'], 4)
+        
+        # Reconstruct in memory
+        hits = [hit['_source'] for hit in search_result['hits']['hits']]
+        
+        # Basic check
+        for hit in hits:
+            self.assertEqual(hit['thread_id'], thread_id)
+            
+        # Verify specific links
+        hit_map = {hit['node_id']: hit for hit in hits}
+        
+        parent_hit = hit_map[parent.node_id]
+        child1_hit = hit_map[child1.node_id]
+        child2_hit = hit_map[child2.node_id]
+        grandchild_hit = hit_map[grandchild21.node_id]
+        
+        self.assertEqual(parent_hit['parent_id'], task.id)
+        self.assertEqual(child1_hit['parent_id'], parent.node_id)
+        self.assertEqual(child2_hit['parent_id'], parent.node_id)
+        self.assertEqual(grandchild_hit['parent_id'], child2.node_id)
+
 if __name__ == "__main__":
     unittest.main()
