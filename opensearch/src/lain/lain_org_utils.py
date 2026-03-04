@@ -2,6 +2,8 @@ import logging
 import os
 import re
 import datetime
+import hashlib
+import time
 
 import string
 import random
@@ -107,7 +109,8 @@ class OrgThread(OrgThreadComponent):
         return {
             'thread_date': self.timestamp,
             "thread_body": self.content,
-            "task_id": self.task.id
+            "task_id": self.task.id,
+            "task_title": self.task.title
         }
 
     def accept(self, visitor):
@@ -239,18 +242,50 @@ class OrgDatabase(OrgVisitor):
         }
       }
     
+    index_settings_mappings = {
+        "settings": {
+            "index": {
+                "number_of_shards": "1",
+                "number_of_replicas": "1"
+            }
+        },
+        "mappings": {
+            "properties": {
+                "hashed_id": {
+                    "type": "keyword"
+                },
+                "original_value": {
+                    "type": "text",
+                    "fields": {
+                        "keyword": {
+                            "type": "keyword",
+                            "ignore_above": 256
+                        }
+                    }
+                },
+                "type": {
+                    "type": "keyword"
+                }
+            }
+        }
+    }
 
     
-    def __init__(self, index_name: str = 'my-org-index-2024-05-21--1'):
+    def __init__(self, opensearch_client: OpenSearch, 
+                 index_name: str = 'my-org-index-2024-05-21--1', 
+                 mappings_index_name: str = 'org-id-mappings'):
         logger.debug("Initializing OrgDatabase with index_name: %s", index_name)
-        endpoint = os.getenv("OPENSEARCH_ENDPOINT")
 
         self.index_name = index_name
-        self.elasticsearch = OpenSearch(endpoint, verify_certs=False)
+        self.mappings_index_name = mappings_index_name
+        self.elasticsearch = opensearch_client # Assign the passed client
 
         if not self.elasticsearch.indices.exists(index=index_name):
             self.elasticsearch.indices.create(index=index_name, body=self.index_settings)
         
+        if not self.elasticsearch.indices.exists(index=mappings_index_name):
+            self.elasticsearch.indices.create(index=mappings_index_name, body=self.index_settings_mappings)
+
     def visit_org_file(self, org_file: OrgFile):
         pass
 
@@ -259,13 +294,28 @@ class OrgDatabase(OrgVisitor):
 
     def visit_org_thread(self, thread: OrgThread):
         logger.debug("Visiting org thread: %s", thread.to_json())
-        if "\end{verbatim" in thread.content:
+        if "\\end{verbatim" in thread.content:
             return
 
         try:
             self.elasticsearch.index(index=self.index_name, body=thread.to_json())
         except Exception as e:
             logger.error("Failed to index thread: %s", thread.to_json(), exc_info=True)
+
+    def index_mappings(self, links: dict):
+        for original_value, hashed_id in links.items():
+            doc_type = "TASKID" if hashed_id.startswith("TASKID") else "HTTPID"
+            mapping_doc = {
+                "hashed_id": hashed_id,
+                "original_value": original_value,
+                "type": doc_type
+            }
+            logger.debug("Attempting to index mapping: %s", mapping_doc)
+            try:
+                self.elasticsearch.index(index=self.mappings_index_name, body=mapping_doc, id=hashed_id)
+                logger.debug("Indexed mapping: %s", mapping_doc)
+            except Exception as e:
+                logger.error("Failed to index mapping: %s", mapping_doc, exc_info=True)
 
 class ThreadParser():
 
@@ -410,14 +460,16 @@ class CleaningVisitor(OrgVisitor):
 
     TIMESTAMP_REGEX = r'- <(\d{4}-\d{2}-\d{2})[\w\s]*>'
 
-    links = {}
+    def __init__(self):
+        self.links = {}
 
     def visit_org_file(self, org_file: OrgFile):
         pass
 
     def visit_org_task(self, org_task: OrgTask):
-        org_task.title = org_task.org_node.heading 
-        org_task.id = f"TASKID{''.join(random.choices(string.printable[:62], k=len(org_task.title)))}"
+        org_task.title = org_task.org_node.heading
+        hashed_title = hashlib.sha256(org_task.title.encode()).hexdigest()[:12]
+        org_task.id = f"TASKID{hashed_title}"
         self.links[org_task.title] = org_task.id
 
     def visit_org_thread(self, org_thread: OrgThread):
@@ -435,7 +487,8 @@ class CleaningVisitor(OrgVisitor):
         
         link = re.match(self.HTTP_REGEX, thread.content, flags=re.DOTALL)
         if link:
-            self.links[link.group(1)] = f"HTTPID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
+            hashed_url = hashlib.sha256(link.group(1).encode()).hexdigest()[:12]
+            self.links[link.group(1)] = f"HTTPID{hashed_url}"
             thread.content = thread.content.replace(link.group(1), self.links[link.group(1)])
 
     def _check_org_links(self, thread: OrgThread):
@@ -445,14 +498,16 @@ class CleaningVisitor(OrgVisitor):
         link = re.match(r'\[\[(.+)\]\[(.+)\]\]', thread.content, flags=re.DOTALL) 
         if link:
             if not link.group(1) in self.links:
-                self.links[link.group(1)] = f"TASKID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
+                hashed_link = hashlib.sha256(link.group(1).encode()).hexdigest()[:12]
+                self.links[link.group(1)] = f"TASKID{hashed_link}"
             thread.content = re.sub(r'\[\[(.+)\]\[(.+)\]\]', f"[[{self.links[link.group(1)]}][{link.group(2)}]]", thread.content, flags=re.DOTALL).strip()
             return
 
         link = re.match(r'\[\[(.+)\]\]', thread.content) 
         if link:
             if not link.group(1) in self.links:
-                self.links[link.group(1)] = f"TASKID{''.join(random.choices(string.printable[:62], k=len(link.group(1))))}"
+                hashed_link = hashlib.sha256(link.group(1).encode()).hexdigest()[:12]
+                self.links[link.group(1)] = f"TASKID{hashed_link}"
             thread.content = re.sub(r'\[\[(.+)\]\]', self.links[link.group(1)], thread.content, flags=re.DOTALL).strip()
 
     def _clean_content(self, org_thread: OrgThread):
@@ -527,10 +582,13 @@ class OrgParser:
         tasks = OrgParser._parse_tasks(org_tree.children[0])
         org_file = OrgFile(tasks[0], tasks[1:])
 
-        org_file.accept(OrgParserVisitor())
-        org_file.accept(CleaningVisitor())
+        org_parser_visitor = OrgParserVisitor()
+        org_file.accept(org_parser_visitor)
 
-        return org_file
+        cleaning_visitor = CleaningVisitor()
+        org_file.accept(cleaning_visitor)
+
+        return org_file, cleaning_visitor
 
 class OrgFileDiscovery:
     @staticmethod
@@ -541,5 +599,8 @@ class OrgModule:
     def run(self, source_path: str):
         logger.debug("OrgModule.run called with source_path: %s", source_path)
         files = OrgFileDiscovery.discover_files(source_path)
+        org_database_visitor = OrgDatabase() # Instantiate once
         for file_path in files:
-            OrgParser.parse(file_path).accept(OrgDatabase())
+            org_file, cleaning_visitor = OrgParser.parse(file_path)
+            org_file.accept(org_database_visitor)
+            org_database_visitor.index_mappings(cleaning_visitor.links)
