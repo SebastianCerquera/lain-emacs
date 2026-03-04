@@ -593,14 +593,39 @@ class OrgParser:
 class OrgFileDiscovery:
     @staticmethod
     def discover_files(directory: str) -> List[str]:
-        return [os.path.join(directory, f) for f in os.listdir(directory) if f.endswith('.org')]
+        org_files = []
+        for root, dirs, files in os.walk(directory):
+            for f in files:
+                if f.endswith('.org'):
+                    org_files.append(os.path.join(root, f))
+        return org_files
 
 class OrgModule:
-    def run(self, source_path: str):
-        logger.debug("OrgModule.run called with source_path: %s", source_path)
+    def run(self, source_path: str, index_name: str = None):
+        logger.debug("OrgModule.run called with source_path: %s, index_name: %s", source_path, index_name)
+        
+        endpoint = os.getenv("OPENSEARCH_ENDPOINT", "http://localhost:9200")
+        os_client = OpenSearch(
+            hosts=[endpoint],
+            use_ssl=False,
+            verify_certs=False,
+            request_timeout=30
+        )
+
         files = OrgFileDiscovery.discover_files(source_path)
-        org_database_visitor = OrgDatabase() # Instantiate once
+        
+        # Instantiate OrgDatabase with the client and optional index_name
+        kwargs = {"opensearch_client": os_client}
+        if index_name:
+            kwargs["index_name"] = index_name
+            
+        org_database_visitor = OrgDatabase(**kwargs)
+        
         for file_path in files:
-            org_file, cleaning_visitor = OrgParser.parse(file_path)
-            org_file.accept(org_database_visitor)
-            org_database_visitor.index_mappings(cleaning_visitor.links)
+            try:
+                logger.info("Parsing file: %s", file_path)
+                org_file, cleaning_visitor = OrgParser.parse(file_path)
+                org_file.accept(org_database_visitor)
+                org_database_visitor.index_mappings(cleaning_visitor.links)
+            except Exception as e:
+                logger.error("Failed to parse or index file %s: %s", file_path, e)
