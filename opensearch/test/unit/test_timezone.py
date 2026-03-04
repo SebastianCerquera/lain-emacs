@@ -49,9 +49,7 @@ class TestTimezoneAwareness(unittest.TestCase):
         
         self.visitor.visit_org_thread(thread)
         
-        self.assertIsInstance(thread.timestamp, datetime.datetime)
-        self.assertIsNotNone(thread.timestamp.tzinfo)
-        self.assertEqual(thread.timestamp.utcoffset(), datetime.timedelta(hours=-5))
+        self.assertIsNone(thread.timestamp)
 
 if __name__ == "__main__":
     unittest.main()

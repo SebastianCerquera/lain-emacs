@@ -456,7 +456,7 @@ class ThreadParser():
                     thread.add_child(subthread)
 
             if thread.content:
-                thread.timestamp = datetime.datetime.now(GMT_MINUS_5)
+                thread.timestamp = None
 
 class OrgParserVisitor(OrgVisitor):
 
@@ -561,7 +561,7 @@ class CleaningVisitor(OrgVisitor):
         if current.timestamp:
             org_thread.timestamp = current.timestamp
         else:
-            org_thread.timestamp = datetime.datetime.now(GMT_MINUS_5)
+            org_thread.timestamp = None
 
 
 

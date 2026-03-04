@@ -4,13 +4,15 @@ import datetime
 from orgparse.node import OrgNode
 from unittest.mock import MagicMock
 
-from lain.lain_org_utils import OrgTask, OrgThread, ThreadParser
+from lain.lain_org_utils import OrgTask, OrgThread, ThreadParser, CleaningVisitor, HierarchyVisitor
 
 GMT_MINUS_5 = datetime.timezone(datetime.timedelta(hours=-5))
 
 class ThreadParserTest(unittest.TestCase): 
 
     parser = ThreadParser()
+    cleaning_visitor = CleaningVisitor()
+    hierarchy_visitor = HierarchyVisitor()
         
     def test_parser_thread_body_is_multibullet_list(self):
         #given:
@@ -84,12 +86,12 @@ class ThreadParserTest(unittest.TestCase):
         #when:
         for thread in threads:
             self.parser.parse_thread(thread)
+            self.cleaning_visitor.visit_org_thread(thread)
 
         #then: 
         for thread in threads:
             self.assertEqual(thread.content, "No timestamp")
-            self.assertEqual(thread.timestamp.date(), datetime.datetime.now(GMT_MINUS_5).date())
-            self.assertEqual(thread.timestamp.tzinfo, GMT_MINUS_5)
+            self.assertIsNone(thread.timestamp)
 
     def test_parse_org_thread_with_spanish_timestamp(self):        
         #given:
@@ -323,6 +325,63 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         Line 3
         Line 4""")
         self.assertEqual(len(child_thread.children), 1)
+
+    def test_timestamp_inheritance_cascading(self):
+        # Requirement: Cascading inheritance, priority, and fallback to None
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TASK TITLE"
+        task = OrgTask(node)
+        task.id = "TASK_ID"
+
+        # Structure:
+        # - <2025-01-01> Root (explicit)
+        #   - Child 1 (no timestamp, should inherit 2025-01-01)
+        #     - Grandchild 1 (no timestamp, should inherit 2025-01-01)
+        #   - Child 2 (<2025-01-02> explicit, should override)
+        #     - Grandchild 2 (no timestamp, should inherit 2025-01-02)
+
+        root = OrgThread("- <2025-01-01> Root", task)
+        c1 = OrgThread("- Child 1", task, parent=root)
+        gc1 = OrgThread("- Grandchild 1", task, parent=c1)
+        c2 = OrgThread("- <2025-01-02> Child 2", task, parent=root)
+        gc2 = OrgThread("- Grandchild 2", task, parent=c2)
+
+        root.add_child(c1)
+        c1.add_child(gc1)
+        root.add_child(c2)
+        c2.add_child(gc2)
+
+        # Run visitors
+        for t in [root, c1, gc1, c2, gc2]:
+            self.cleaning_visitor.visit_org_thread(t)
+
+        # Assertions
+        expected_root = datetime.datetime(2025, 1, 1, tzinfo=GMT_MINUS_5)
+        expected_c2 = datetime.datetime(2025, 1, 2, tzinfo=GMT_MINUS_5)
+
+        self.assertEqual(root.timestamp, expected_root)
+        self.assertEqual(c1.timestamp, expected_root, "Child 1 should inherit root timestamp")
+        self.assertEqual(gc1.timestamp, expected_root, "Grandchild 1 should inherit from Child 1 (cascading)")
+        self.assertEqual(c2.timestamp, expected_c2, "Child 2 should have its own explicit timestamp")
+        self.assertEqual(gc2.timestamp, expected_c2, "Grandchild 2 should inherit from Child 2 (priority)")
+
+    def test_fallback_to_none_in_ancestry(self):
+        # Requirement: Fallback to None if no timestamp in ancestry
+        node = MagicMock(spec=OrgNode)
+        node.heading = "TASK TITLE"
+        task = OrgTask(node)
+        task.id = "TASK_ID"
+
+        root = OrgThread("- Root no timestamp", task)
+        child = OrgThread("- Child no timestamp", task, parent=root)
+        root.add_child(child)
+
+        # Run visitors
+        self.cleaning_visitor.visit_org_thread(root)
+        self.cleaning_visitor.visit_org_thread(child)
+
+        self.assertIsNone(root.timestamp, "Root with no timestamp in ancestry should have None timestamp")
+        self.assertIsNone(child.timestamp, "Child with no timestamp in ancestry should have None timestamp")
 
     def test_parse_org_thread_with_links_and_nested_thread(self):        
         #given:
