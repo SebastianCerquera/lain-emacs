@@ -6,6 +6,7 @@ from unittest.mock import MagicMock
 
 from lain.lain_org_utils import OrgTask, OrgThread, ThreadParser
 
+GMT_MINUS_5 = datetime.timezone(datetime.timedelta(hours=-5))
 
 class ThreadParserTest(unittest.TestCase): 
 
@@ -69,7 +70,7 @@ class ThreadParserTest(unittest.TestCase):
         #then: 
         for thread in threads:
             self.assertEqual(thread.content, "My test title")
-            self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 18).date())
+            self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 18, tzinfo=GMT_MINUS_5))
 
     def test_parse_thread_list_with_no_timestamp(self):        
         #given:
@@ -87,7 +88,8 @@ class ThreadParserTest(unittest.TestCase):
         #then: 
         for thread in threads:
             self.assertEqual(thread.content, "No timestamp")
-            self.assertEqual(thread.timestamp, datetime.datetime.now().date())
+            self.assertEqual(thread.timestamp.date(), datetime.datetime.now(GMT_MINUS_5).date())
+            self.assertEqual(thread.timestamp.tzinfo, GMT_MINUS_5)
 
     def test_parse_org_thread_with_spanish_timestamp(self):        
         #given:
@@ -103,7 +105,7 @@ class ThreadParserTest(unittest.TestCase):
 
         #then: 
         self.assertEqual(thread.content, "Spanish timestamp format")
-        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 11).date())
+        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 11, tzinfo=GMT_MINUS_5))
 
     def test_parse_org_thread_with_code_block(self):        
         #given:
@@ -182,10 +184,10 @@ class ThreadParserTest(unittest.TestCase):
 
         #then: 
         self.assertEqual(thread.content, """Parent line""")
-        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 11).date())
+        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 11, tzinfo=GMT_MINUS_5))
 
         self.assertEqual(thread.children[0].content, """Child line""")
-        self.assertEqual(thread.children[0].timestamp, datetime.datetime(2024, 5, 12).date())
+        self.assertEqual(thread.children[0].timestamp, datetime.datetime(2024, 5, 12, tzinfo=GMT_MINUS_5))
 
     def test_parse_org_thread_with_multiline_entry(self):        
         #given:
@@ -201,7 +203,7 @@ class ThreadParserTest(unittest.TestCase):
         self.parser.parse_thread(thread)
         
         #then:
-        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 20).date())
+        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 20, tzinfo=GMT_MINUS_5))
         self.assertEqual(thread.content, """This is a multiline thread,
   this is still part of the thread content.""")
         
@@ -222,7 +224,7 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         self.parser.parse_thread(thread)
         
         #then:
-        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 18).date())
+        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 18, tzinfo=GMT_MINUS_5))
         self.assertEqual(thread.content, "line 1")
 
     def test_parse_org_thread_with_org_properties_schedule_check(self):
@@ -240,7 +242,7 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         self.parser.parse_thread(thread)
 
         #then:
-        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 18).date())
+        self.assertEqual(thread.timestamp, datetime.datetime(2024, 5, 18, tzinfo=GMT_MINUS_5))
         self.assertEqual(thread.content, "line 1")
 
     def test_parse_org_empty_thread_logbook(self):
@@ -359,35 +361,35 @@ CLOCK: [2024-05-14 mar 12:46]--[2024-05-14 mar 13:16] =>  0:30
         #then:
 
         # First thread
-        self.assertEqual(threads[0].timestamp, datetime.datetime(2024, 5, 15).date())
+        self.assertEqual(threads[0].timestamp, datetime.datetime(2024, 5, 15, tzinfo=GMT_MINUS_5))
         self.assertEqual(threads[0].content, """Line 1
       Line 2
       Line 3
       Line 3.""")
         
         # Second thread
-        self.assertEqual(threads[1].timestamp, datetime.datetime(2024, 5, 14).date())
+        self.assertEqual(threads[1].timestamp, datetime.datetime(2024, 5, 14, tzinfo=GMT_MINUS_5))
         self.assertEqual(threads[1].content, "[[some.org::title a]]")
 
         self.assertEqual(len(threads[1].children), 1)
-        self.assertEqual(threads[1].children[0].timestamp, datetime.datetime(2024, 5, 14).date())
+        self.assertEqual(threads[1].children[0].timestamp, datetime.datetime(2024, 5, 14, tzinfo=GMT_MINUS_5))
         self.assertEqual(threads[1].children[0].content, "https://test1.com")
 
         # Third thread
-        self.assertEqual(threads[2].timestamp, datetime.datetime(2024, 5, 14).date())
+        self.assertEqual(threads[2].timestamp, datetime.datetime(2024, 5, 14, tzinfo=GMT_MINUS_5))
         self.assertEqual(threads[2].content, "[[some.org::title b]]")
 
         self.assertEqual(len(threads[2].children), 3)
-        self.assertEqual(threads[2].children[0].timestamp, datetime.datetime(2024, 5, 13).date())
+        self.assertEqual(threads[2].children[0].timestamp, datetime.datetime(2024, 5, 13, tzinfo=GMT_MINUS_5))
         self.assertEqual(threads[2].children[0].content, "https://test2.com")
 
-        self.assertEqual(threads[2].children[1].timestamp, datetime.datetime(2024, 5, 14).date())
+        self.assertEqual(threads[2].children[1].timestamp, datetime.datetime(2024, 5, 14, tzinfo=GMT_MINUS_5))
         self.assertEqual(threads[2].children[1].content, "https://test3.com")
 
         self.assertEqual(len(threads[2].children[1].children), 1)
         self.assertEqual(threads[2].children[1].children[0].content, "Line 4\n          Line 5")
 
-        self.assertEqual(threads[2].children[2].timestamp, datetime.datetime(2024, 5, 14).date())
+        self.assertEqual(threads[2].children[2].timestamp, datetime.datetime(2024, 5, 14, tzinfo=GMT_MINUS_5))
         self.assertEqual(threads[2].children[2].content, "")
 
         self.assertEqual(threads[2].children[2].children[0].content, "https://test4.com")

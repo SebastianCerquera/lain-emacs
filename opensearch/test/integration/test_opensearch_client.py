@@ -1,5 +1,7 @@
 import unittest
 import time
+from unittest.mock import MagicMock
+from orgparse.node import OrgNode
 from opensearchpy import OpenSearch, ConnectionError
 from testcontainers.opensearch import OpenSearchContainer
 import os
@@ -220,6 +222,44 @@ class TestOpenSearchIntegration(unittest.TestCase): # Renamed class
             
             self.assertTrue(found, 
                                f"Mapping for hashed_id {hashed_id} (original: {original_value}) not found in mappings index after {max_retries} retries.")
+
+    def test_thread_date_has_timezone_offset(self):
+        # Index a single thread with a known date
+        node = MagicMock(spec=OrgNode)
+        node.heading = "Timezone Test Task"
+        task = OrgTask(node)
+        task.id = "TASKID_TZ_TEST"
+        thread = OrgThread("- <2024-05-18> Timezone test thread", task=task)
+        
+        # We need to run the parser and cleaner visitors
+        # We also need to manually set the raw content
+        thread.raw = "- <2024-05-18> Timezone test thread"
+        
+        parser_visitor = OrgParserVisitor()
+        thread.accept(parser_visitor)
+        
+        cleaning_visitor = CleaningVisitor()
+        thread.accept(cleaning_visitor)
+        
+        # Index the thread
+        self.org_database_visitor.visit_org_thread(thread)
+        self.os_client.indices.refresh(index=self.test_index_name)
+        
+        # Search for the thread
+        search_body = {
+            "query": {
+                "term": {"task_id.keyword": "TASKID_TZ_TEST"}
+            }
+        }
+        search_result = self.os_client.search(index=self.test_index_name, body=search_body)
+        
+        self.assertEqual(search_result['hits']['total']['value'], 1)
+        doc = search_result['hits']['hits'][0]['_source']
+        
+        # OpenSearch stores dates as strings in ISO format
+        thread_date = doc['thread_date']
+        self.assertTrue(thread_date.endswith("-05:00"), f"Expected thread_date to end with -05:00, got {thread_date}")
+        self.assertIn("2024-05-18T00:00:00-05:00", thread_date)
 
 if __name__ == "__main__":
     unittest.main()

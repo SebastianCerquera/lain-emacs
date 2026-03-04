@@ -21,6 +21,8 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
+GMT_MINUS_5 = datetime.timezone(datetime.timedelta(hours=-5))
+
 # Base Classes
 class OrgEntity(ABC):
 
@@ -389,7 +391,7 @@ class ThreadParser():
          date_text = re.match(ThreadParser.ORG_BULLET_PATTERN, thread.raw, flags=re.DOTALL)
         
          if date_text:
-            thread.timestamp = datetime.datetime.strptime(date_text.group(1), '%Y-%m-%d').date()
+            thread.timestamp = datetime.datetime.strptime(date_text.group(1), '%Y-%m-%d').replace(tzinfo=GMT_MINUS_5)
 
             body = date_text.group(2)
             next_bullet = body.find("-")
@@ -433,7 +435,7 @@ class ThreadParser():
                     thread.add_child(subthread)
 
             if thread.content:
-                thread.timestamp = datetime.datetime.now().date()
+                thread.timestamp = datetime.datetime.now(GMT_MINUS_5)
 
 class OrgParserVisitor(OrgVisitor):
 
@@ -528,7 +530,7 @@ class CleaningVisitor(OrgVisitor):
     def _extract_and_set_timestamp(self, org_thread: OrgThread):
         match = re.search(self.TIMESTAMP_REGEX, org_thread.raw)
         if match:
-            org_thread.timestamp = datetime.datetime.strptime(match.group(1), '%Y-%m-%d')
+            org_thread.timestamp = datetime.datetime.strptime(match.group(1), '%Y-%m-%d').replace(tzinfo=GMT_MINUS_5)
 
     def _set_lowest_timestamp(self, org_thread: OrgThread):
         current = org_thread
@@ -538,7 +540,7 @@ class CleaningVisitor(OrgVisitor):
         if current.timestamp:
             org_thread.timestamp = current.timestamp
         else:
-            org_thread.timestamp = datetime.datetime.now().date()
+            org_thread.timestamp = datetime.datetime.now(GMT_MINUS_5)
 
 
 
