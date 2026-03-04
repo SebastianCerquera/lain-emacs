@@ -12,4 +12,4 @@ opensearch/.vscode/launch.json
 opensearch/.dependencies/*
 *__pycache__*
 opensearch/src/lain.egg-info/*
-
+opensearch/scrum_agendas/*
