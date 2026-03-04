@@ -13,3 +13,11 @@ opensearch/.dependencies/*
 *__pycache__*
 opensearch/src/lain.egg-info/*
 opensearch/scrum_agendas/*
+elpa/*
+scrum.org.original
+e2e/node_modules/*
+e2e/test-results/*
+e2e/playwright-report/*
+e2e_final_logs.txt
+e2e_full_logs.txt
+test/test_output.log
